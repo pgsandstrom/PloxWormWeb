@@ -37,4 +37,15 @@
         <listener-class>com.sun.faces.config.ConfigureListener</listener-class>
     </listener>
 
+    <servlet>
+        <servlet-name>wsChat</servlet-name>
+        <servlet-class>
+            se.persandstrom.ploxworm.web.WebSocketTest
+        </servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>wsChat</servlet-name>
+        <url-pattern>/chat</url-pattern>
+    </servlet-mapping>
+
 </web-app>

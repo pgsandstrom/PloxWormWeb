@@ -14,6 +14,14 @@
 
     <dependencies>
 
+        <!-- websockets -->
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-catalina-ws</artifactId>
+            <version>7.0.37</version>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- jsf -->
         <dependency>
             <groupId>com.sun.faces</groupId>
