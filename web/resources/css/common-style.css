@@ -1,0 +1,30 @@
+body {
+    font: 100%/1.5 sans-serif;
+    background: #F8CDB6;
+    color: #311;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
+    width: 960px;
+}
+
+#content {
+    background: #FFFFFF;
+}
+
+.clear {
+    clear: both;
+}
+
+.inline-block {
+    display: inline-block;
+}
+
+#canvas {
+    /* size must be in html or else shit happens */
+    /*width: 600px;*/
+    /*height: 600px;*/
+    border:1px dotted;
+}

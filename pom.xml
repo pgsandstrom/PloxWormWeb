@@ -22,6 +22,14 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- tomcat coyote, needed for websockets. Must be a broken dependency -->
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-coyote</artifactId>
+            <version>7.0.37</version>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- jsf -->
         <dependency>
             <groupId>com.sun.faces</groupId>

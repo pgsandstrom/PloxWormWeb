@@ -40,7 +40,7 @@
     <servlet>
         <servlet-name>wsChat</servlet-name>
         <servlet-class>
-            se.persandstrom.ploxworm.web.WebSocketTest
+            se.persandstrom.ploxworm.web.WsServlet
         </servlet-class>
     </servlet>
     <servlet-mapping>
