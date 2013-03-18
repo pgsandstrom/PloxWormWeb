@@ -1,0 +1,459 @@
+package se.persandstrom.ploxworm.core;
+
+import java.util.ArrayList;
+
+import se.persandstrom.ploxworm.AccelerometerInterface;
+import se.persandstrom.ploxworm.AccelerometerManager;
+import se.persandstrom.ploxworm.Constant;
+import se.persandstrom.ploxworm.core.worm.HumanWorm;
+import se.persandstrom.ploxworm.core.worm.Worm;
+import se.persandstrom.ploxworm.core.worm.ai.StupidWorm;
+import se.persandstrom.ploxworm.core.worm.board.Board;
+import se.persandstrom.ploxworm.core.worm.board.BoardManager;
+import android.app.Activity;
+import android.content.Intent;
+import android.hardware.SensorEvent;
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
+
+public class Core extends AccelerometerInterface {
+
+	protected static final String TAG = "Core";
+
+	//point related constants
+	private static final int POINTS_APPLE = 50;
+	private static final int POINTS_VICTORY = 500;
+
+	//handler constants:
+	private static final int HANDLER_REFRESH_SCORE_BOARD = 0;
+	private static final int HANDLER_SHOW_DEATH = 1;
+
+	final Activity activity;
+
+	final TextView scoreBoard;
+	final TextView titleView;
+	final TextView messageView;
+
+	//the game thread:
+	GameThread gameThread;
+
+	//The game view:
+	final GameView gameView;
+
+	public boolean gameStarted = false;
+	public boolean gameRunning = false;
+
+	//number of tics since start!
+	int counter = 0;
+
+	int level;
+	long score = 0;
+	int aliveAiCount = 0;
+
+	Board board;
+	ArrayList<Worm> wormList;
+
+	//specific game settings:
+
+	//resurrect on death and never spawn gold apple
+	private boolean eternalGame = false;
+
+	/**
+	 * 
+	 * @param activity
+	 * @param gameView the view holding the actual game
+	 * @param scoreBoard the view that shows the score
+	 * @param titleView
+	 * @param messageView
+	 */
+	private Core(Activity activity, GameView gameView, TextView scoreBoard, TextView titleView, TextView messageView) {
+		this.activity = activity;
+
+		this.gameView = gameView;
+		this.scoreBoard = scoreBoard;
+		this.titleView = titleView;
+		this.messageView = messageView;
+
+		initAccelerometer(activity);
+
+		if (Constant.DEBUG) Log.d(TAG, "messageView: " + messageView);
+	}
+
+	private void initAccelerometer(Activity activity) {
+		if (AccelerometerManager.isSupported(activity)) {
+			AccelerometerManager.startListening(activity, this);
+		} else {
+			if (Constant.DEBUG) Log.d(TAG, " ACCELEROMETER NOT SUPPORTED :(:(:(");
+		}
+	}
+
+	public void setLevel(int level) {
+		this.level = level;
+		Board board = BoardManager.getBoard(this, level);
+		this.board = board;
+	}
+
+	public void setScore(long score) {
+		this.score = score;
+	}
+
+	public void startGame(int level, long score) {
+		if (Constant.DEBUG) Log.d(TAG, "startGame: " + level + ", " + score);
+
+		Board board = BoardManager.getBoard(this, level);
+		this.level = level;
+		this.score = score;
+		this.board = board;
+
+		wormList = board.getWormList();
+		setAiCounter(wormList);
+
+		gameView.setNewBoard(board);
+
+		if (titleView != null) {
+			titleView.setText(board.title);
+		}
+
+		new StartCountDownThread(titleView, messageView).execute();
+	}
+
+	public void startGame() {
+		if (Constant.DEBUG) Log.d(TAG, "startGame");
+
+		wormList = board.getWormList();
+
+		setAiCounter(wormList);
+
+		gameView.setNewBoard(board);
+
+		if (titleView != null) {
+			titleView.setText(board.title);
+		}
+
+		new StartCountDownThread(titleView, messageView).execute();
+	}
+
+	private void setAiCounter(ArrayList<Worm> wormList) {
+		for (Worm worm : wormList) {
+			if (worm.isAi()) {
+				aliveAiCount++;
+			}
+		}
+	}
+
+	/**
+	 * Starts the game thread.
+	 */
+	public void go() {
+		if (Constant.DEBUG) Log.d(TAG, "go!");
+
+		gameStarted = true;
+		gameRunning = true;
+		if (gameThread != null) {
+			gameThread.run = false;
+		}
+		gameThread = new GameThread();
+		gameThread.start();
+
+		if (scoreBoard != null) {
+			scoreBoard.setText(String.valueOf(score));
+		}
+	}
+
+	public void stop() {
+		counter = 0;
+		gameStarted = false;
+		gameRunning = false;
+	}
+
+	public void death(boolean waitBeforeExiting) {
+		if (Constant.DEBUG) Log.d(TAG, "death");
+		stop();
+
+		if (waitBeforeExiting) {
+			sendToHandler(HANDLER_SHOW_DEATH);
+			new DeathCountDownThread().execute();
+		} else {
+			end();
+		}
+	}
+
+	private void end() {
+		Intent resultIntent = new Intent();
+		resultIntent.putExtra(GameActivity.RESULT_EXTRA_POINTS, score);
+		activity.setResult(GameActivity.RESULT_DEATH, resultIntent);
+		activity.finish();
+	}
+
+	/**
+	 * Moves the gameworld one tic forward!
+	 */
+	public void tic() {
+
+		counter++;
+
+		//maybe it would be prettier to call tic on the board? I dunno, think about it.
+		//we cant till for ALL worms.... what if computer worm dies?
+		int size = wormList.size() - 1;
+		for (int i = size; i >= 0; i--) {
+			Worm worm = wormList.get(i);
+			int makeMove = worm.makeMove();
+			if (makeMove == Worm.MOVE_DEATH) {
+				if (worm instanceof HumanWorm) {
+					death(true);
+				} else {
+					if (eternalGame) {
+						worm.reset();
+					} else {
+						worm.isAlive = false;
+						aliveAiCount--;
+					}
+				}
+			}
+		}
+
+		gameView.forceInvalidated();
+	}
+
+	public void ateApple() {
+		increaseScore(POINTS_APPLE);
+	}
+
+	public void victory() {
+
+		if (eternalGame) {
+
+		}
+
+		if (Constant.DEBUG) Log.d(TAG, "victory!");
+		increaseScore(POINTS_VICTORY);
+		stop();
+
+		Intent resultIntent = new Intent();
+		resultIntent.putExtra(GameActivity.RESULT_EXTRA_POINTS, score);
+		activity.setResult(GameActivity.RESULT_VICTORY, resultIntent);
+		activity.finish();
+	}
+
+	private void increaseScore(int newScore) {
+		score += newScore;
+		sendToHandler(HANDLER_REFRESH_SCORE_BOARD);
+	}
+
+	@Override
+	public void acceleration(SensorEvent event) {
+		xAcc = -event.values[0];
+		yAcc = event.values[1];
+	}
+
+	public void sendToHandler(int what) {
+		Message msg = new Message();
+		msg.what = what;
+		handler.sendMessage(msg);
+	}
+
+	Handler handler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			if (Constant.DEBUG) Log.d(TAG, "handleMessage: " + msg.what);
+			switch (msg.what) {
+			case HANDLER_REFRESH_SCORE_BOARD:
+				if (scoreBoard != null) {
+					scoreBoard.setText(String.valueOf(score));
+				}
+				break;
+			case HANDLER_SHOW_DEATH:
+				messageView.setVisibility(View.VISIBLE);
+				messageView.setText("Death!");
+				break;
+			}
+		}
+	};
+
+	public void backPress() {
+		death(false);
+	}
+
+	private class GameThread extends Thread {
+
+		long duration;
+
+		public boolean run = true;
+
+		@Override
+		public void run() {
+
+			while (gameRunning && run) {
+				try {
+					Thread.sleep(Math.max(0, 50 - duration));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				long currentTimeMillis = System.currentTimeMillis();
+				tic();
+				duration = System.currentTimeMillis() - currentTimeMillis;
+				//				if (Constant.DEBUG) Log.d(TAG, "tic time: " + duration);
+			}
+		}
+	}
+
+	private class StartCountDownThread extends AsyncTask<Void, Integer, Void> {
+
+		private static final int STEP_WAITING_TIME = 300;
+
+		int countSteps = 3;
+		final TextView titleView;
+		final TextView messageView;
+
+		public StartCountDownThread(TextView titleView, TextView messageView) {
+			this.titleView = titleView;
+			this.messageView = messageView;
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+
+			do {
+				publishProgress(countSteps);
+				try {
+					Thread.sleep(STEP_WAITING_TIME);
+				} catch (InterruptedException quiet) {
+				}
+				countSteps--;
+			} while (countSteps > 0);
+
+			return null;
+		}
+
+		@Override
+		protected void onProgressUpdate(Integer... values) {
+			if (messageView != null) {
+				String text = String.valueOf(values[0]);
+				messageView.setText(text);
+			}
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			if (titleView != null) {
+				titleView.setVisibility(View.INVISIBLE);
+			}
+			if (messageView != null) {
+				messageView.setVisibility(View.INVISIBLE);
+			}
+			go();
+		}
+	}
+
+	private class DeathCountDownThread extends AsyncTask<Void, Integer, Void> {
+
+		private static final int STEP_WAITING_TIME = 750;
+
+		public DeathCountDownThread() {
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+
+			try {
+				Thread.sleep(STEP_WAITING_TIME);
+			} catch (InterruptedException quiet) {
+			}
+
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			end();
+		}
+	}
+
+	/**
+	 * Builder class
+	 * @author Per Sandström
+	 *
+	 */
+	public static class Builder {
+
+		private Core core;
+
+		private int level = 1;
+		private long score = 0;
+		boolean makePlayersToAi = false;
+		boolean eternalGame = false;
+
+		private boolean isBuilt = false;
+
+		public Builder(Activity activity, GameView gameView, TextView scoreBoard, TextView titleView,
+				TextView messageView) {
+			core = new Core(activity, gameView, scoreBoard, titleView, messageView);
+		}
+
+		public void setLevel(int level) {
+			this.level = level;
+		}
+
+		public void setScore(long score) {
+			this.score = score;
+		}
+
+		public void setEternalGame(boolean eternalGame) {
+			this.eternalGame = eternalGame;
+		}
+
+		public void setMakePlayersToAi(boolean makePlayersToAi) {
+			this.makePlayersToAi = makePlayersToAi;
+		}
+
+		public Core build() {
+			if (isBuilt) {
+				throw new IllegalStateException("cannot build twice");
+			} else {
+				setupCore();
+				isBuilt = true;
+				return core;
+			}
+		}
+
+		public Core start() {
+			setupCore();
+			core.startGame();
+			return core;
+		}
+
+		/**
+		 * set the variables that has been specified to the core
+		 */
+		private void setupCore() {
+			core.setLevel(level);
+			core.setScore(score);
+			core.eternalGame = eternalGame;
+			if (eternalGame) {
+				makePlayersToAi();
+				core.board.setAppleEatGoal(Integer.MAX_VALUE / 2);
+			}
+		}
+
+		/**
+		 * Set all human controlled worms to become computers controlled.
+		 */
+		private void makePlayersToAi() {
+			ArrayList<Worm> wormList = core.board.getWormList();
+			for (int i = 0; i < wormList.size(); i++) {
+				Worm worm = wormList.get(i);
+				if (worm instanceof HumanWorm) {
+					StupidWorm stupidWorm = new StupidWorm(core, worm.paint, worm.xPos, worm.yPos, worm.xForce,
+							worm.yForce);
+					stupidWorm.init(worm.board);
+					wormList.remove(i);
+					wormList.add(i, stupidWorm);
+				}
+			}
+		}
+	}
+}

@@ -1,30 +1,39 @@
 package se.persandstrom.ploxworm.web;
 
+import se.persandstrom.ploxworm.core.Core;
+import se.persandstrom.ploxworm.core.GameController;
+
 /**
  * User: pesandst
  * Date: 2013-03-15
  * Time: 12:42
  */
-public class Game extends Thread {
+public class Game implements PlayerParent {
 
-    Player p1;
-    Player p2;
+    private final GameController gameController;
+    private final Core core;
 
-    public Game(Player p1, Player p2) {
-        this.p1 = p1;
-        this.p2 = p2;
+    public Game(GameController gameController, Core core) {
+        this.gameController = gameController;
+        this.core = core;
+    }
+
+    public void start() {
+        core.startGame();
     }
 
     @Override
-    public void run() {
-        for (int i = 0; i < 5; i++) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-            p1.send("time " + i);
-            p2.send("time " + i);
-        }
+    public void received(Player player, String message) {
+        //NOT IMPLEMENTED
+    }
+
+    @Override
+    public void remove(Player player) {
+        //NOT IMPLEMENTED
+    }
+
+    @Override
+    public void open(Player player) {
+        throw new UnsupportedOperationException("you should already be open you doofus!");
     }
 }

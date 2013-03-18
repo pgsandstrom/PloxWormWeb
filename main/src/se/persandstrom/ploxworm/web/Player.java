@@ -10,10 +10,21 @@ public class Player {
 
     private PlayerParent parent;
 
+    //player-number in the games:
+    private int number;
+
     public Player(SimpleWebSocket ws) {
         this.ws = ws;
         ws.setOwner(this);
         connected = false;
+    }
+
+    public int getNumber() {
+        return number;
+    }
+
+    public void setNumber(int number) {
+        this.number = number;
     }
 
     public void setParent(PlayerParent parent) {

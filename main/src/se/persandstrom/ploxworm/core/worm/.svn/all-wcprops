@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/dev/!svn/ver/89/trunk/PloxWorm/src/se/persandstrom/ploxworm/core/worm
+END
+HumanWorm.java
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/dev/!svn/ver/89/trunk/PloxWorm/src/se/persandstrom/ploxworm/core/worm/HumanWorm.java
+END
+ComputerWorm.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/dev/!svn/ver/89/trunk/PloxWorm/src/se/persandstrom/ploxworm/core/worm/ComputerWorm.java
+END
+Worm.java
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/dev/!svn/ver/88/trunk/PloxWorm/src/se/persandstrom/ploxworm/core/worm/Worm.java
+END

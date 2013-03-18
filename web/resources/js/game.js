@@ -1,22 +1,16 @@
 (function () {
     "use strict";
 
-    var PUT_IN_QUEUE = "";
-
     $(document).ready(function () {
 
         var ws;
 
         var canvas = $("#canvas")[0];
         var context = canvas.getContext('2d');
+        var board;
 
-//        context.beginPath();
-//        context.moveTo(10, 10);
-//        context.lineTo(100, 100);
-//        context.lineTo(110, 100);
-//        context.lineTo(120, 80);
-//        context.stroke();
-
+        var mouseX;
+        var mouseY;
 
         $("#start-game").click(function () {
             webSocketInit();
@@ -30,7 +24,7 @@
             if ("WebSocket" in window) {
                 window.ploxworm.log("Starting init!");
 
-                ws = new WebSocket("ws://localhost:8080/chat");
+                ws = new WebSocket('ws://'+window.location.hostname + ':' + location.port+'/chat');
                 ws.onopen = function () {
                     window.ploxworm.log("Connection open!");
                     ws.send("HELLO THIS IS MESSAGE");
@@ -40,10 +34,12 @@
                     var received_msg = evt.data;
                     window.ploxworm.log("Received: " + received_msg);
                     var msgJson = $.parseJSON(received_msg);
-                    console.log("msgJson: " + msgJson);
-                    console.log("msgJson.type: " + msgJson.type);
+//                    console.log("msgJson: " + msgJson);
+//                    console.log("msgJson.type: " + msgJson.type);
                     if (msgJson.type === 'frame') {
                         render(msgJson.data);
+                    } else if (msgJson.type === 'board') {
+                        saveBoard(msgJson.data);
                     }
                 };
                 ws.onclose = function (evt) {
@@ -58,20 +54,53 @@
             }
         }
 
+        function saveBoard(jsonData) {
+            board = jsonData;
+            renderBoard();
+        }
+
         function render(jsonData) {
             console.log("render: " + jsonData);
-            var you = jsonData.you;
-            var first = true;
+
+            renderFrame(jsonData);
+            renderBoard();
+        }
+
+        function renderFrame(jsonData) {
+            var worms = jsonData.worms;
+
+            $.each(worms, function () {
+                var first = true;
+                context.beginPath();
+                $.each(this, function () {
+                    if (first) {
+                        context.moveTo(this.x, this.y);
+                        first = false;
+                    } else {
+                        context.lineTo(this.x, this.y);
+                    }
+                });
+                context.stroke();
+            });
+        }
+
+        function renderBoard() {
+//            console.log('renderboard: '+board);
+            var obstacles = board.obstacles;
             context.beginPath();
-            $.each(you, function () {
-                if (first) {
-                    context.moveTo(this.x, this.y);
-                    first = false;
+            $.each(obstacles, function () {
+                var data = this.data;
+                if (this.type === 'rectangle') {
+                    context.rect(data.left, data.top, data.right - data.left, data.bottom - data.top);
+                } else if (this.type === 'circle') {
+                    console.log('circle: ' + data.x + ' ' + data.y + ' ' + data.radius);
+                    context.arc(data.x, data.y, data.radius, 0, 2 * Math.PI, false);
                 } else {
-                    context.lineTo(this.x, this.y);
+                    console.log('wtf unknown type: ' + this.type);
                 }
             });
-            context.stroke();
+            context.fillStyle = 'gray';
+            context.fill();
         }
 
         $(window).bind('beforeunload', function () {
@@ -84,6 +113,18 @@
                 ws.close();
             }
         }
+
+        $("#canvas").mousemove(function (event) {
+            //taken from http://stackoverflow.com/questions/1114465/getting-mouse-location-in-canvas
+            if (event.offsetX) {
+                mouseX = event.offsetX;
+                mouseY = event.offsetY;
+            } else if (event.layerX) {
+                mouseX = event.layerX;
+                mouseY = event.layerY;
+            }
+//            window.ploxworm.log("move: " + mouseX + ", " + mouseY);
+        });
 
         window.ploxworm.log("loaded");
     });

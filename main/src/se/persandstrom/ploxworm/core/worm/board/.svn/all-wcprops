@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/dev/!svn/ver/89/trunk/PloxWorm/src/se/persandstrom/ploxworm/core/worm/board
+END
+ObstacleRectangle.java
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/dev/!svn/ver/72/trunk/PloxWorm/src/se/persandstrom/ploxworm/core/worm/board/ObstacleRectangle.java
+END
+Obstacle.java
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/dev/!svn/ver/59/trunk/PloxWorm/src/se/persandstrom/ploxworm/core/worm/board/Obstacle.java
+END
+ObstacleCircle.java
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/dev/!svn/ver/72/trunk/PloxWorm/src/se/persandstrom/ploxworm/core/worm/board/ObstacleCircle.java
+END
+Apple.java
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/dev/!svn/ver/89/trunk/PloxWorm/src/se/persandstrom/ploxworm/core/worm/board/Apple.java
+END
+BoardManager.java
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/dev/!svn/ver/88/trunk/PloxWorm/src/se/persandstrom/ploxworm/core/worm/board/BoardManager.java
+END
+Board.java
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/dev/!svn/ver/88/trunk/PloxWorm/src/se/persandstrom/ploxworm/core/worm/board/Board.java
+END

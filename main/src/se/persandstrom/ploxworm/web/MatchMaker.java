@@ -2,6 +2,8 @@ package se.persandstrom.ploxworm.web;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import se.persandstrom.ploxworm.core.Core;
+import se.persandstrom.ploxworm.core.GameController;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
@@ -21,42 +23,22 @@ public class MatchMaker implements Serializable, PlayerParent {
             System.out.println("wtf player not connected");
         }
 
-        JsonObject point1 = new JsonObject();
-        point1.addProperty("x", 3);
-        point1.addProperty("y", 3);
-        JsonObject point2 = new JsonObject();
-        point2.addProperty("x", 35);
-        point2.addProperty("y", 36);
-        JsonObject point3 = new JsonObject();
-        point3.addProperty("x", 54);
-        point3.addProperty("y", 51);
-        JsonArray youArray = new JsonArray();
-        youArray.add(point1);
-        youArray.add(point2);
-        youArray.add(point3);
-
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.add("you", youArray);
-//        jsonObject.addProperty("enemies", errorName);
-//        jsonObject.addProperty("objects", getMessage());
+        player.setNumber(0);
 
 
-        JsonObject root = new JsonObject();
-        root.addProperty("type","frame");
-        root.add("data",jsonObject);
+        GameController gameController = new GameController(player);
+        Core.Builder builder = new Core.Builder(gameController);
+        builder.setEternalGame(false);
+        builder.setLevel(4);
+        builder.setMakePlayersToAi(false);
+        builder.setScore(0);
+        Core core = builder.build();
 
-        player.send(root.toString());
+        gameController.setCore(core);
 
-//        synchronized (this) {
-//            if (waitingPlayer == null) {
-//                waitingPlayer = player;
-//                player.send(WsMessage.IN_QUEUE);
-//            } else {
-//                //TODO ping the other player?
-//                new Game(waitingPlayer, player).start();
-//                waitingPlayer = null;
-//            }
-//        }
+        //when a match has been made:
+        new Game(gameController, core).start();
+
     }
 
     @Override
