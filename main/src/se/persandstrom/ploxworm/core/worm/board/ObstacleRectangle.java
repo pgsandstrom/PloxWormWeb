@@ -6,6 +6,9 @@ public class ObstacleRectangle implements Obstacle {
 
 	protected static final String TAG = "ObstacleCircle";
 
+    //for json serialization
+    public final String type = "rectangle";
+
 	public final float left;
 	public final float top;
 	public final float right;

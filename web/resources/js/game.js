@@ -7,7 +7,7 @@
 
         var canvas = $("#canvas")[0];
         var context = canvas.getContext('2d');
-        var board;
+        var match;
 
         var headX;
         var headY;
@@ -40,8 +40,8 @@
 //                    console.log("msgJson.type: " + msgJson.type);
                     if (msgJson.type === 'frame') {
                         render(msgJson.data);
-                    } else if (msgJson.type === 'board') {
-                        saveBoard(msgJson.data);
+                    } else if (msgJson.type === 'match') {
+                        saveMatchData(msgJson.data);
                         //XXX currently this is our "game started" signal
                         gameRunning = true;
                         startSendingPosition();
@@ -70,8 +70,8 @@
             ws.send(JSON.stringify(matchRequest));
         }
 
-        function saveBoard(jsonData) {
-            board = jsonData;
+        function saveMatchData(jsonData) {
+            match = jsonData;
             renderBoard();
         }
 
@@ -106,7 +106,7 @@
         }
 
         function renderBoard() {
-            var obstacles = board.obstacles;
+            var obstacles = match.obstacles;
             context.beginPath();
             $.each(obstacles, function () {
                 var data = this.data;

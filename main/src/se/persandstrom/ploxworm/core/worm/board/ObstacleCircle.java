@@ -1,5 +1,6 @@
 package se.persandstrom.ploxworm.core.worm.board;
 
+import com.google.gson.annotations.SerializedName;
 import se.persandstrom.ploxworm.core.Line;
 
 
@@ -7,7 +8,13 @@ public class ObstacleCircle implements Obstacle {
 
 	protected static final String TAG = "ObstacleCircle";
 
+    //for json serialization
+    public final String type = "circle";
+
+    @SerializedName("x")
 	public final float positionX;
+
+    @SerializedName("y")
 	public final float positionY;
 
 	public final float radius;

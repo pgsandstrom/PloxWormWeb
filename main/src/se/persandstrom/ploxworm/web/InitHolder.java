@@ -1,5 +1,7 @@
 package se.persandstrom.ploxworm.web;
 
+import com.google.gson.JsonObject;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -24,7 +26,7 @@ public class InitHolder implements PlayerParent {
     }
 
     @Override
-    public void received(Player player, String message) {
+    public void received(Player player, JsonObject message) {
         //NOT IMPLEMENTED XXX log this
     }
 

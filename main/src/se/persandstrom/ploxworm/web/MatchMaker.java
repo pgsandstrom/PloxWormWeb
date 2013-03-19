@@ -1,5 +1,6 @@
 package se.persandstrom.ploxworm.web;
 
+import com.google.gson.JsonObject;
 import se.persandstrom.ploxworm.core.Core;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -45,7 +46,7 @@ public class MatchMaker implements Serializable, PlayerParent {
     }
 
     @Override
-    public void received(Player player, String message) {
+    public void received(Player player, JsonObject message) {
         //NOT IMPLEMENTED
     }
 

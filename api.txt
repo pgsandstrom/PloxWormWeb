@@ -1,8 +1,8 @@
 -------------------
--------BOARD-------
+-------MATCH-------
 -------------------
 {
-	type: board
+	type: match
 	data: {
 		your_number: 1
 		size_x: 500
