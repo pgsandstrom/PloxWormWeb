@@ -28,7 +28,7 @@ public class SimpleWebSocket extends MessageInbound {
 
     @Override
     protected void onTextMessage(CharBuffer charBuffer) throws IOException {
-        System.out.println("onTextMessage");
+//        System.out.println("onTextMessage");
         owner.received(String.valueOf(charBuffer));
 
         //TODO temp:

@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Holds the websockets while they open
+ * Holds the websockets while they open and make a game request
  */
 @Named("initHolder")
 @ApplicationScoped
@@ -35,7 +35,8 @@ public class InitHolder implements PlayerParent {
 
     @Override
     public void open(Player player) {
-        playerSet.remove(player);
-        matchMaker.addPlayer(player);
+        //do nothing until they request a game
+//        playerSet.remove(player);
+//        matchMaker.addPlayer(player);
     }
 }

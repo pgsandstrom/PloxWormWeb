@@ -1,5 +1,8 @@
 package se.persandstrom.ploxworm.web;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.io.IOException;
 
 public class Player {
@@ -10,22 +13,15 @@ public class Player {
 
     private PlayerParent parent;
 
-    //player-number in the games:
-    private int number;
+    private final JsonParser parser;
 
     public Player(SimpleWebSocket ws) {
         this.ws = ws;
         ws.setOwner(this);
         connected = false;
+        parser = new JsonParser();
     }
 
-    public int getNumber() {
-        return number;
-    }
-
-    public void setNumber(int number) {
-        this.number = number;
-    }
 
     public void setParent(PlayerParent parent) {
         this.parent = parent;
@@ -43,7 +39,9 @@ public class Player {
 
     public void received(String message) {
         System.out.println(this + " received: " + message);
-        parent.received(this, message);
+
+        JsonObject msgJson = (JsonObject) parser.parse(message);
+        parent.received(this, msgJson);
     }
 
     public boolean isConnected() {

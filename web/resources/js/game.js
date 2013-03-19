@@ -9,8 +9,12 @@
         var context = canvas.getContext('2d');
         var board;
 
+        var headX;
+        var headY;
         var mouseX;
         var mouseY;
+
+        var gameRunning = false;
 
         $("#start-game").click(function () {
             webSocketInit();
@@ -22,36 +26,48 @@
 
         function webSocketInit() {
             if ("WebSocket" in window) {
-                window.ploxworm.log("Starting init!");
+                window.ploxworm.log("Opening websocket");
 
-                ws = new WebSocket('ws://'+window.location.hostname + ':' + location.port+'/chat');
+                ws = new WebSocket('ws://' + window.location.hostname + ':' + location.port + '/chat');
                 ws.onopen = function () {
                     window.ploxworm.log("Connection open!");
-                    ws.send("HELLO THIS IS MESSAGE");
-
+                    sendGameRequest();
                 };
                 ws.onmessage = function (evt) {
                     var received_msg = evt.data;
                     window.ploxworm.log("Received: " + received_msg);
                     var msgJson = $.parseJSON(received_msg);
-//                    console.log("msgJson: " + msgJson);
 //                    console.log("msgJson.type: " + msgJson.type);
                     if (msgJson.type === 'frame') {
                         render(msgJson.data);
                     } else if (msgJson.type === 'board') {
                         saveBoard(msgJson.data);
+                        //XXX currently this is our "game started" signal
+                        gameRunning = true;
+                        startSendingPosition();
                     }
                 };
                 ws.onclose = function (evt) {
                     window.ploxworm.log("Connection closed!");
+                    gameRunning = false;
                 };
                 ws.onerror = function (evt) {
                     window.ploxworm.log("error!");
+                    gameRunning = false;
                 };
             } else {
                 // The browser doesn't support WebSocket
                 alert("WebSocket NOT supported by your Browser! GTFO!");
             }
+        }
+
+        function sendGameRequest() {
+            var matchRequest = {};
+            var gameType = $("#game-type").val();
+            var level = $("#level").val();
+            matchRequest.game_type = gameType;
+            matchRequest.level = level;
+            ws.send(JSON.stringify(matchRequest));
         }
 
         function saveBoard(jsonData) {
@@ -60,8 +76,10 @@
         }
 
         function render(jsonData) {
-            console.log("render: " + jsonData);
+//            console.log("render: " + jsonData);
 
+            //TODO draw level on another canvas or something?
+            context.clearRect(0, 0, 800, 800);
             renderFrame(jsonData);
             renderBoard();
         }
@@ -70,14 +88,17 @@
             var worms = jsonData.worms;
 
             $.each(worms, function () {
-                var first = true;
                 context.beginPath();
-                $.each(this, function () {
-                    if (first) {
+                var lines = this;
+                $.each(this, function (index) {
+                    if (index === 0) {
                         context.moveTo(this.x, this.y);
-                        first = false;
                     } else {
                         context.lineTo(this.x, this.y);
+                    }
+                    if (index + 1 === lines.length) {
+                        headX = this.x;
+                        headY = this.y;
                     }
                 });
                 context.stroke();
@@ -85,7 +106,6 @@
         }
 
         function renderBoard() {
-//            console.log('renderboard: '+board);
             var obstacles = board.obstacles;
             context.beginPath();
             $.each(obstacles, function () {
@@ -93,7 +113,6 @@
                 if (this.type === 'rectangle') {
                     context.rect(data.left, data.top, data.right - data.left, data.bottom - data.top);
                 } else if (this.type === 'circle') {
-                    console.log('circle: ' + data.x + ' ' + data.y + ' ' + data.radius);
                     context.arc(data.x, data.y, data.radius, 0, 2 * Math.PI, false);
                 } else {
                     console.log('wtf unknown type: ' + this.type);
@@ -125,6 +144,29 @@
             }
 //            window.ploxworm.log("move: " + mouseX + ", " + mouseY);
         });
+
+        function startSendingPosition() {
+            setTimeout(updateWormDirection, 500);  //TODO time it takes for game to start, actually, or something lol
+
+            function updateWormDirection() {
+//                console.log('updateWormDirection');
+                //TODO should care about the canvas size and stuff...
+                //TODO and should go from the worm head
+                var x = mouseX - 400;
+                var y = mouseY - 400;
+
+                var directionMessage = {};
+                directionMessage.type = 'direction';
+                directionMessage.data = {};
+                directionMessage.data.x = x;
+                directionMessage.data.y = y;
+                ws.send(JSON.stringify(directionMessage));
+
+                if (gameRunning) {
+                    setTimeout(updateWormDirection, 50);
+                }
+            }
+        }
 
         window.ploxworm.log("loaded");
     });

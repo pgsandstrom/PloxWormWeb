@@ -1,7 +1,10 @@
 package se.persandstrom.ploxworm.web;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import se.persandstrom.ploxworm.core.Core;
-import se.persandstrom.ploxworm.core.GameController;
+
+import java.util.List;
 
 /**
  * User: pesandst
@@ -10,12 +13,22 @@ import se.persandstrom.ploxworm.core.GameController;
  */
 public class Game implements PlayerParent {
 
-    private final GameController gameController;
+    private final List<Player> playerList;
+    private final WebGameController gameController;
     private final Core core;
 
-    public Game(GameController gameController, Core core) {
+
+
+    public Game(List<Player> playerList, WebGameController gameController, Core core) {
+        this.playerList = playerList;
         this.gameController = gameController;
         this.core = core;
+
+        for (Player player : playerList) {
+            player.setParent(this);
+        }
+
+
     }
 
     public void start() {
@@ -23,8 +36,19 @@ public class Game implements PlayerParent {
     }
 
     @Override
-    public void received(Player player, String message) {
-        //NOT IMPLEMENTED
+    public void received(Player player, JsonObject message) {
+
+        int playerNumber = playerList.indexOf(player);
+
+
+        String type = message.get("type").getAsString();
+        JsonObject data = message.get("data").getAsJsonObject();
+//        System.out.println("type: " + type);
+        if ("direction".equals(type)) {
+            gameController.setAcc(playerNumber, data.get("x").getAsFloat(),data.get("y").getAsFloat());
+        } else {
+            System.out.println("unknown type: " + type);
+        }
     }
 
     @Override

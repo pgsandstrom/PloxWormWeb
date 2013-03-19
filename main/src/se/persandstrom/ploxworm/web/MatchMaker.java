@@ -1,13 +1,12 @@
 package se.persandstrom.ploxworm.web;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import se.persandstrom.ploxworm.core.Core;
-import se.persandstrom.ploxworm.core.GameController;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Named("matchMaker")
 @ApplicationScoped
@@ -23,10 +22,7 @@ public class MatchMaker implements Serializable, PlayerParent {
             System.out.println("wtf player not connected");
         }
 
-        player.setNumber(0);
-
-
-        GameController gameController = new GameController(player);
+        WebGameController gameController = new WebGameController(player);
         Core.Builder builder = new Core.Builder(gameController);
         builder.setEternalGame(false);
         builder.setLevel(4);
@@ -36,8 +32,15 @@ public class MatchMaker implements Serializable, PlayerParent {
 
         gameController.setCore(core);
 
+
+        List<Player> playerList = new ArrayList<>();
+        playerList.add(player);
+
         //when a match has been made:
-        new Game(gameController, core).start();
+        Game game = new Game(playerList,gameController, core);
+
+
+        game.start();
 
     }
 
