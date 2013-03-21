@@ -14,7 +14,7 @@ import se.persandstrom.ploxworm.core.worm.board.ObstacleRectangle;
 
 import java.util.ArrayList;
 
-public class WebGameController implements GameController{
+public class WebGameController implements GameController {
 
     private Core core;
     private final Player[] playerList;
@@ -42,6 +42,7 @@ public class WebGameController implements GameController{
     }
 
     public void setAcc(int playerNumber, float xAcc, float yAcc) {
+//        System.out.println("setAcc: " + xAcc + ", " + yAcc);
         playerAcc[playerNumber][0] = xAcc;
         playerAcc[playerNumber][1] = yAcc;
     }
@@ -89,7 +90,9 @@ public class WebGameController implements GameController{
     @Override
     public void setNewBoard(Board board) {
         System.out.println("setNewBoard");
-        System.out.println("obstacles: "+board.getObstacles().size());
+        System.out.println("obstacles: " + board.getObstacles().size());
+
+        //TODO use gson instead
 
         JsonObject data = new JsonObject();
 
@@ -108,25 +111,25 @@ public class WebGameController implements GameController{
             if (obstacle instanceof ObstacleRectangle) {
                 ObstacleRectangle rec = (ObstacleRectangle) obstacle;
                 obstacleJson.addProperty("type", "rectangle");
-                obstacleData.addProperty("top",rec.top);
-                obstacleData.addProperty("right",rec.right);
-                obstacleData.addProperty("bottom",rec.bottom);
-                obstacleData.addProperty("left",rec.left);
+                obstacleData.addProperty("top", rec.top);
+                obstacleData.addProperty("right", rec.right);
+                obstacleData.addProperty("bottom", rec.bottom);
+                obstacleData.addProperty("left", rec.left);
             } else if (obstacle instanceof ObstacleCircle) {
                 ObstacleCircle circle = (ObstacleCircle) obstacle;
                 obstacleJson.addProperty("type", "circle");
-                obstacleData.addProperty("x",circle.positionX);
-                obstacleData.addProperty("y",circle.positionY);
-                obstacleData.addProperty("radius",circle.radius);
+                obstacleData.addProperty("x", circle.positionX);
+                obstacleData.addProperty("y", circle.positionY);
+                obstacleData.addProperty("radius", circle.radius);
             }
         }
 
-        send("board", data);
+        send("match", data);
     }
 
     @Override
     public void render() {
-        System.out.println("render");
+//        System.out.println("render");
 
         JsonObject data = new JsonObject();
 

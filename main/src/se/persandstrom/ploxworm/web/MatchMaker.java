@@ -2,6 +2,7 @@ package se.persandstrom.ploxworm.web;
 
 import com.google.gson.JsonObject;
 import se.persandstrom.ploxworm.core.Core;
+import se.persandstrom.ploxworm.web.api.objects.MatchRequest;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
@@ -15,34 +16,50 @@ public class MatchMaker implements Serializable, PlayerParent {
 
     Player waitingPlayer;
 
-    public void addPlayer(Player player) {
+    public void addPlayer(Player player, MatchRequest matchRequest) {
         player.setParent(this);
 
-        if(!player.isConnected()) {
+        if (!player.isConnected()) {
             //TODO
             System.out.println("wtf player not connected");
         }
 
+        switch (matchRequest.getGameType()) {
+            case single:
+                startSinglePlayer(player, false, matchRequest.getLevel());
+                break;
+            case vs_cpu:
+                startSinglePlayer(player, true, matchRequest.getLevel());
+                break;
+            case multi:
+                arrangeMultiPlayer(player, matchRequest.getLevel());
+                break;
+        }
+    }
+
+    private void startSinglePlayer(Player player, boolean withCpu, int level) {
+        System.out.println("startSinglePlayer: " + level);
         WebGameController gameController = new WebGameController(player);
         Core.Builder builder = new Core.Builder(gameController);
-        builder.setEternalGame(false);
-        builder.setLevel(4);
-        builder.setMakePlayersToAi(false);
+//        builder.setEternalGame(false);
+        builder.setLevel(level);
+//        builder.setMakePlayersToAi(false);
         builder.setScore(0);
-        Core core = builder.build();
-
-        gameController.setCore(core);
-
 
         List<Player> playerList = new ArrayList<>();
         playerList.add(player);
+        //TODO add cpu if u know
+
+        Core core = builder.build();
+        gameController.setCore(core);
 
         //when a match has been made:
-        Game game = new Game(playerList,gameController, core);
-
-
+        Game game = new Game(playerList, gameController, core);
         game.start();
+    }
 
+    private void arrangeMultiPlayer(Player player, int level) {
+        //TODO
     }
 
     @Override

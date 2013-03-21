@@ -28,7 +28,7 @@ public class Player {
     }
 
     public void send(String message) {
-        System.out.println(this + " send: " + message);
+//        System.out.println(this + " send: " + message);
         try {
             ws.send(message);
         } catch (IOException e) {
@@ -38,7 +38,7 @@ public class Player {
     }
 
     public void received(String message) {
-        System.out.println(this + " received: " + message);
+//        System.out.println(this + " received: " + message);
 
         JsonObject msgJson = (JsonObject) parser.parse(message);
         parent.received(this, msgJson);

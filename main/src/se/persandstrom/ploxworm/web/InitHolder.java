@@ -1,6 +1,8 @@
 package se.persandstrom.ploxworm.web;
 
 import com.google.gson.JsonObject;
+import se.persandstrom.ploxworm.web.api.ApiObjectFactory;
+import se.persandstrom.ploxworm.web.api.objects.MatchRequest;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -16,6 +18,9 @@ import java.util.Set;
 public class InitHolder implements PlayerParent {
 
     @Inject
+    ApiObjectFactory apiObjectFactory;
+
+    @Inject
     MatchMaker matchMaker;
 
     Set<Player> playerSet = new HashSet<Player>();
@@ -27,7 +32,16 @@ public class InitHolder implements PlayerParent {
 
     @Override
     public void received(Player player, JsonObject message) {
-        //NOT IMPLEMENTED XXX log this
+        Class typeClass = apiObjectFactory.getTypeClass(message);
+
+        if (typeClass == MatchRequest.class) {
+            MatchRequest matchRequest = apiObjectFactory.getApiObject(message, MatchRequest.class);
+            //TODO synchronize?
+            playerSet.remove(player);
+            matchMaker.addPlayer(player, matchRequest);
+        } else {
+            throw new IllegalStateException("received wrong class: " + apiObjectFactory.getType(message));
+        }
     }
 
     @Override

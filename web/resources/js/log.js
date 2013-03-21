@@ -11,7 +11,7 @@
 
     window.ploxworm.log = function logz(message) {
         currentLog = message + "\n" + currentLog;
-        currentLog = currentLog.substr(0, 1024);
+        currentLog = currentLog.substr(0, 2048);
         textarea.text(currentLog);
     };
 

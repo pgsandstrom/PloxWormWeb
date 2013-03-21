@@ -53,7 +53,8 @@ public class Game implements PlayerParent {
 
     @Override
     public void remove(Player player) {
-        //NOT IMPLEMENTED
+        //TODO if multiplayer, make other player winner
+        core.stop();
     }
 
     @Override

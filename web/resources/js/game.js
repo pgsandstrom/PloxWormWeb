@@ -35,7 +35,7 @@
                 };
                 ws.onmessage = function (evt) {
                     var received_msg = evt.data;
-                    window.ploxworm.log("Received: " + received_msg);
+//                    window.ploxworm.log("Received: " + received_msg);
                     var msgJson = $.parseJSON(received_msg);
 //                    console.log("msgJson.type: " + msgJson.type);
                     if (msgJson.type === 'frame') {
@@ -45,6 +45,8 @@
                         //XXX currently this is our "game started" signal
                         gameRunning = true;
                         startSendingPosition();
+                    } else {
+                        window.ploxworm.log('unknown data: ' + msgJson);
                     }
                 };
                 ws.onclose = function (evt) {
@@ -63,14 +65,18 @@
 
         function sendGameRequest() {
             var matchRequest = {};
+            var data = {};
+            matchRequest.type = "match_request";
+            matchRequest.data = data;
             var gameType = $("#game-type").val();
             var level = $("#level").val();
-            matchRequest.game_type = gameType;
-            matchRequest.level = level;
+            data.game_type = gameType;
+            data.level = level;
             ws.send(JSON.stringify(matchRequest));
         }
 
         function saveMatchData(jsonData) {
+            window.ploxworm.log('saveMatchData: ' + jsonData);
             match = jsonData;
             renderBoard();
         }
@@ -151,16 +157,20 @@
             function updateWormDirection() {
 //                console.log('updateWormDirection');
                 //TODO should care about the canvas size and stuff...
-                //TODO and should go from the worm head
-                var x = mouseX - 400;
-                var y = mouseY - 400;
+//                var x = mouseX - 400;
+//                var y = mouseY - 400;
+                var x = mouseX - headX;
+                var y = mouseY - headY;
 
-                var directionMessage = {};
-                directionMessage.type = 'direction';
-                directionMessage.data = {};
-                directionMessage.data.x = x;
-                directionMessage.data.y = y;
-                ws.send(JSON.stringify(directionMessage));
+                if (!isNaN(x) && !isNaN(y)) {
+                    var directionMessage = {};
+                    directionMessage.type = 'direction';
+                    directionMessage.data = {};
+                    directionMessage.data.x = x;
+                    directionMessage.data.y = y;
+                    console.log('sending direction: ' + x + ', ' + y);
+                    ws.send(JSON.stringify(directionMessage));
+                }
 
                 if (gameRunning) {
                     setTimeout(updateWormDirection, 50);
