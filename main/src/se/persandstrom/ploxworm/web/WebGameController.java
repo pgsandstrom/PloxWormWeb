@@ -8,13 +8,14 @@ import se.persandstrom.ploxworm.core.GameController;
 import se.persandstrom.ploxworm.core.Line;
 import se.persandstrom.ploxworm.core.worm.Worm;
 import se.persandstrom.ploxworm.core.worm.board.Board;
-import se.persandstrom.ploxworm.core.worm.board.Obstacle;
-import se.persandstrom.ploxworm.core.worm.board.ObstacleCircle;
-import se.persandstrom.ploxworm.core.worm.board.ObstacleRectangle;
+import se.persandstrom.ploxworm.web.api.ApiObjectFactory;
+import se.persandstrom.ploxworm.web.api.objects.Match;
 
 import java.util.ArrayList;
 
 public class WebGameController implements GameController {
+
+    private final ApiObjectFactory apiObjectFactory = new ApiObjectFactory();
 
     private Core core;
     private final Player[] playerList;
@@ -89,48 +90,24 @@ public class WebGameController implements GameController {
 
     @Override
     public void setNewBoard(Board board) {
-        System.out.println("setNewBoard");
-        System.out.println("obstacles: " + board.getObstacles().size());
+//        System.out.println("setNewBoard");
+//        System.out.println("obstacles: " + board.getObstacles().size());
 
-        //TODO use gson instead
+        Match match = new Match(board.getXSize(), board.getYSize(), board.getObstacles());
 
-        JsonObject data = new JsonObject();
-
-        data.addProperty("size_x", board.getXSize());
-        data.addProperty("size_y", board.getYSize());
-
-        JsonArray obstacleArray = new JsonArray();
-        data.add("obstacles", obstacleArray);
-
-        for (Obstacle obstacle : board.getObstacles()) {
-            //XXX snyggify this
-            JsonObject obstacleJson = new JsonObject();
-            JsonObject obstacleData = new JsonObject();
-            obstacleJson.add("data", obstacleData);
-            obstacleArray.add(obstacleJson);
-            if (obstacle instanceof ObstacleRectangle) {
-                ObstacleRectangle rec = (ObstacleRectangle) obstacle;
-                obstacleJson.addProperty("type", "rectangle");
-                obstacleData.addProperty("top", rec.top);
-                obstacleData.addProperty("right", rec.right);
-                obstacleData.addProperty("bottom", rec.bottom);
-                obstacleData.addProperty("left", rec.left);
-            } else if (obstacle instanceof ObstacleCircle) {
-                ObstacleCircle circle = (ObstacleCircle) obstacle;
-                obstacleJson.addProperty("type", "circle");
-                obstacleData.addProperty("x", circle.positionX);
-                obstacleData.addProperty("y", circle.positionY);
-                obstacleData.addProperty("radius", circle.radius);
-            }
+        for (int i = 0; i < playerList.length; i++) {
+            Player player = playerList[i];
+            match.setYour_number(i);
+            sendToPlayer(player, "match", apiObjectFactory.createApiObject(match));
         }
 
-        send("match", data);
     }
 
     @Override
     public void render() {
 //        System.out.println("render");
 
+        //TODO should these be gson or would tht slow stuff down? TEST IT
         JsonObject data = new JsonObject();
 
         JsonArray wormArray = new JsonArray();
@@ -140,8 +117,6 @@ public class WebGameController implements GameController {
         for (int wormNumber = 0; wormNumber < wormList.size(); wormNumber++) {
             Worm worm = wormList.get(wormNumber);
             JsonArray lineArray = new JsonArray();
-
-            //TODO fuling, lägg inte alltid i you
             wormArray.add(lineArray);
 
             ArrayList<Line> lineList = worm.getLineList();
@@ -162,7 +137,7 @@ public class WebGameController implements GameController {
             }
         }
 
-        send("frame", data);
+        send(ApiObjectFactory.TYPE_FRME, data);
     }
 
     @Override
@@ -176,7 +151,7 @@ public class WebGameController implements GameController {
     }
 
     private void send(String type, JsonElement data) {
-
+//TODO dess funktioner borde snrre ligg i piboecjtfctory eller nåt
         JsonObject root = new JsonObject();
         root.addProperty("type", type);
         root.add("data", data);
@@ -184,6 +159,15 @@ public class WebGameController implements GameController {
         for (Player player : playerList) {
             player.send(root.toString());
         }
+    }
+
+    private void sendToPlayer(Player player, String type, JsonElement data) {
+
+        JsonObject root = new JsonObject();
+        root.addProperty("type", type);
+        root.add("data", data);
+
+        player.send(root.toString());
     }
 
 }

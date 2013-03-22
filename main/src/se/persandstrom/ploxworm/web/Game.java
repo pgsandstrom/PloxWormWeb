@@ -3,6 +3,7 @@ package se.persandstrom.ploxworm.web;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import se.persandstrom.ploxworm.core.Core;
+import se.persandstrom.ploxworm.web.api.ApiObjectFactory;
 
 import java.util.List;
 
@@ -13,10 +14,11 @@ import java.util.List;
  */
 public class Game implements PlayerParent {
 
+    private final ApiObjectFactory apiObjectFactory = new ApiObjectFactory();
+
     private final List<Player> playerList;
     private final WebGameController gameController;
     private final Core core;
-
 
 
     public Game(List<Player> playerList, WebGameController gameController, Core core) {
@@ -27,8 +29,6 @@ public class Game implements PlayerParent {
         for (Player player : playerList) {
             player.setParent(this);
         }
-
-
     }
 
     public void start() {
@@ -40,12 +40,15 @@ public class Game implements PlayerParent {
 
         int playerNumber = playerList.indexOf(player);
 
+        //TODO use this when we got more potential messages
+        Class messageClass = apiObjectFactory.getTypeClass(message);
+
 
         String type = message.get("type").getAsString();
         JsonObject data = message.get("data").getAsJsonObject();
-//        System.out.println("type: " + type);
+        System.out.println("type: " + type);
         if ("direction".equals(type)) {
-            gameController.setAcc(playerNumber, data.get("x").getAsFloat(),data.get("y").getAsFloat());
+            gameController.setAcc(playerNumber, data.get("x").getAsFloat(), data.get("y").getAsFloat());
         } else {
             System.out.println("unknown type: " + type);
         }

@@ -2,19 +2,28 @@ package se.persandstrom.ploxworm.web;
 
 import com.google.gson.JsonObject;
 import se.persandstrom.ploxworm.core.Core;
+import se.persandstrom.ploxworm.web.api.ApiObjectFactory;
 import se.persandstrom.ploxworm.web.api.objects.MatchRequest;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Named("matchMaker")
 @ApplicationScoped
 public class MatchMaker implements Serializable, PlayerParent {
 
+    @Inject
+    ApiObjectFactory apiObjectFactory;
+
+    private final Random random = new Random();
+
     Player waitingPlayer;
+    int waitingPlayerLevel;
 
     public void addPlayer(Player player, MatchRequest matchRequest) {
         player.setParent(this);
@@ -59,7 +68,29 @@ public class MatchMaker implements Serializable, PlayerParent {
     }
 
     private void arrangeMultiPlayer(Player player, int level) {
-        //TODO
+        synchronized (this) {
+            if (waitingPlayer == null) {
+                waitingPlayer = player;
+                waitingPlayerLevel = level;
+                JsonObject putInUeueObject = apiObjectFactory.createApiObject(ApiObjectFactory.TYPE_PUT_IN_UEUE);
+                player.send(putInUeueObject.toString()); //TODO renme
+            } else {
+                ArrayList<Player> playerList = new ArrayList<Player>();
+                playerList.add(waitingPlayer);
+                playerList.add(player);
+                waitingPlayer = null;
+
+                WebGameController gameController = new WebGameController(player);
+                Core.Builder builder = new Core.Builder(gameController);
+                builder.setLevel(random.nextInt(2) == 0 ? level : waitingPlayerLevel);  //TODO should it be 2? TEST
+                builder.setScore(0);
+                Core core = builder.build();
+                gameController.setCore(core);
+
+                Game game = new Game(playerList, gameController, core);
+                game.start();
+            }
+        }
     }
 
     @Override

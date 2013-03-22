@@ -17,12 +17,26 @@
         var gameRunning = false;
 
         $("#start-game").click(function () {
-            webSocketInit();
+            prepareGame();
         });
 
         $("#stop-game").click(function () {
             webSocketStop();
         });
+
+        function prepareGame() {
+            //TODO flytta tillbaka spelaren till initholder eller nåt när han dör
+            if (!ws || ws.readyState !== 1) {
+                if (ws) {
+                    window.ploxworm.log("websocket readystate: " + ws.readyState);
+                } else {
+                    window.ploxworm.log("websocket: " + ws);
+                }
+                webSocketInit();
+            } else {
+                sendGameRequest();
+            }
+        }
 
         function webSocketInit() {
             if ("WebSocket" in window) {
@@ -64,6 +78,8 @@
         }
 
         function sendGameRequest() {
+            window.ploxworm.log("Sendings game request!");
+
             var matchRequest = {};
             var data = {};
             matchRequest.type = "match_request";
@@ -76,7 +92,7 @@
         }
 
         function saveMatchData(jsonData) {
-            window.ploxworm.log('saveMatchData: ' + jsonData);
+//            window.ploxworm.log('saveMatchData your_number: ' + jsonData.your_number);
             match = jsonData;
             renderBoard();
         }
@@ -93,39 +109,50 @@
         function renderFrame(jsonData) {
             var worms = jsonData.worms;
 
-            $.each(worms, function () {
+            $.each(worms, function (wormIndex, value) {
                 context.beginPath();
                 var lines = this;
+                var lastX;
+                var lastY;
                 $.each(this, function (index) {
-                    if (index === 0) {
+                    // move context if this is the first step or if we just crossed a border
+                    if (index === 0 || Math.abs(lastX - this.x) > 100 || Math.abs(lastY - this.y) > 100) {
                         context.moveTo(this.x, this.y);
                     } else {
                         context.lineTo(this.x, this.y);
                     }
-                    if (index + 1 === lines.length) {
+                    if (index + 1 === lines.length && wormIndex === match.your_number) {
                         headX = this.x;
                         headY = this.y;
                     }
+                    lastX = this.x;
+                    lastY = this.y;
                 });
                 context.stroke();
             });
         }
 
         function renderBoard() {
-            var obstacles = match.obstacles;
-            context.beginPath();
-            $.each(obstacles, function () {
-                var data = this.data;
-                if (this.type === 'rectangle') {
-                    context.rect(data.left, data.top, data.right - data.left, data.bottom - data.top);
-                } else if (this.type === 'circle') {
-                    context.arc(data.x, data.y, data.radius, 0, 2 * Math.PI, false);
-                } else {
-                    console.log('wtf unknown type: ' + this.type);
+            try {
+                var obstacles = match.obstacles;
+                if (obstacles) {
+                    context.beginPath();
+                    $.each(obstacles, function () {
+                        var data = this.data;
+                        if (this.type === 'rectangle') {
+                            context.rect(data.left, data.top, data.right - data.left, data.bottom - data.top);
+                        } else if (this.type === 'circle') {
+                            context.arc(data.x, data.y, data.radius, 0, 2 * Math.PI, false);
+                        } else {
+                            console.log('wtf unknown type: ' + this.type);
+                        }
+                    });
+                    context.fillStyle = 'gray';
+                    context.fill();
                 }
-            });
-            context.fillStyle = 'gray';
-            context.fill();
+            } catch (e) {
+                window.ploxworm.log("error in renderBord");
+            }
         }
 
         $(window).bind('beforeunload', function () {
@@ -148,7 +175,6 @@
                 mouseX = event.layerX;
                 mouseY = event.layerY;
             }
-//            window.ploxworm.log("move: " + mouseX + ", " + mouseY);
         });
 
         function startSendingPosition() {
@@ -156,9 +182,6 @@
 
             function updateWormDirection() {
 //                console.log('updateWormDirection');
-                //TODO should care about the canvas size and stuff...
-//                var x = mouseX - 400;
-//                var y = mouseY - 400;
                 var x = mouseX - headX;
                 var y = mouseY - headY;
 
@@ -170,6 +193,8 @@
                     directionMessage.data.y = y;
                     console.log('sending direction: ' + x + ', ' + y);
                     ws.send(JSON.stringify(directionMessage));
+                } else {
+                    console.log('failed to get direction: ' + x + ', ' + y);
                 }
 
                 if (gameRunning) {
