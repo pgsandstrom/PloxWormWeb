@@ -40,7 +40,7 @@ public class Game implements PlayerParent {
 
         int playerNumber = playerList.indexOf(player);
 
-        //TODO use this when we got more potential messages
+        //use this when we got more potential messages
         Class messageClass = apiObjectFactory.getTypeClass(message);
 
 

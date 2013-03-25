@@ -55,12 +55,16 @@
                     if (msgJson.type === 'frame') {
                         render(msgJson.data);
                     } else if (msgJson.type === 'match') {
+                        //currently this is our "game started" signal
                         saveMatchData(msgJson.data);
-                        //XXX currently this is our "game started" signal
                         gameRunning = true;
                         startSendingPosition();
+                    } else if (msgJson.type === 'end_round') {
+                        window.ploxworm.log("Game ended!");
+                        gameRunning = false;
                     } else {
                         window.ploxworm.log('unknown data: ' + msgJson);
+                        window.ploxworm.log('unknown data 2: ' + msgJson.type);
                     }
                 };
                 ws.onclose = function (evt) {
@@ -107,29 +111,35 @@
         }
 
         function renderFrame(jsonData) {
-            var worms = jsonData.worms;
+            try {
+                var worms = jsonData.worms;
+                if (worms) {
+                    $.each(worms, function (wormIndex, value) {
+                        context.beginPath();
+                        var lines = this;
+                        var lastX;
+                        var lastY;
+                        $.each(this, function (index) {
+                            // move context if this is the first step or if we just crossed a border
+                            if (index === 0 || Math.abs(lastX - this.x) > 100 || Math.abs(lastY - this.y) > 100) {
+                                context.moveTo(this.x, this.y);
+                            } else {
+                                context.lineTo(this.x, this.y);
+                            }
 
-            $.each(worms, function (wormIndex, value) {
-                context.beginPath();
-                var lines = this;
-                var lastX;
-                var lastY;
-                $.each(this, function (index) {
-                    // move context if this is the first step or if we just crossed a border
-                    if (index === 0 || Math.abs(lastX - this.x) > 100 || Math.abs(lastY - this.y) > 100) {
-                        context.moveTo(this.x, this.y);
-                    } else {
-                        context.lineTo(this.x, this.y);
-                    }
-                    if (index + 1 === lines.length && wormIndex === match.your_number) {
-                        headX = this.x;
-                        headY = this.y;
-                    }
-                    lastX = this.x;
-                    lastY = this.y;
-                });
-                context.stroke();
-            });
+                            if (index + 1 === lines.length && wormIndex === match.your_number) {
+                                headX = this.x;
+                                headY = this.y;
+                            }
+                            lastX = this.x;
+                            lastY = this.y;
+                        });
+                        context.stroke();
+                    });
+                }
+            } catch (e) {
+                window.ploxworm.log("error in renderFrame: " + e.stack);
+            }
         }
 
         function renderBoard() {
@@ -138,11 +148,10 @@
                 if (obstacles) {
                     context.beginPath();
                     $.each(obstacles, function () {
-                        var data = this.data;
                         if (this.type === 'rectangle') {
-                            context.rect(data.left, data.top, data.right - data.left, data.bottom - data.top);
+                            context.rect(this.left, this.top, this.right - this.left, this.bottom - this.top);
                         } else if (this.type === 'circle') {
-                            context.arc(data.x, data.y, data.radius, 0, 2 * Math.PI, false);
+                            context.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
                         } else {
                             console.log('wtf unknown type: ' + this.type);
                         }
@@ -151,7 +160,7 @@
                     context.fill();
                 }
             } catch (e) {
-                window.ploxworm.log("error in renderBord");
+                window.ploxworm.log("error in renderBord: " + e.stack);
             }
         }
 
@@ -194,7 +203,7 @@
                     console.log('sending direction: ' + x + ', ' + y);
                     ws.send(JSON.stringify(directionMessage));
                 } else {
-                    console.log('failed to get direction: ' + x + ', ' + y);
+                    console.log('failed to get direction: ' + mouseX + ', ' + headX);
                 }
 
                 if (gameRunning) {

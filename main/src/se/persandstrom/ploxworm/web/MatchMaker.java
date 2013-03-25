@@ -72,7 +72,7 @@ public class MatchMaker implements Serializable, PlayerParent {
             if (waitingPlayer == null) {
                 waitingPlayer = player;
                 waitingPlayerLevel = level;
-                JsonObject putInUeueObject = apiObjectFactory.createApiObject(ApiObjectFactory.TYPE_PUT_IN_UEUE);
+                JsonObject putInUeueObject = apiObjectFactory.createApiObject(ApiObjectFactory.TYPE_PUT_IN_QUEUE);
                 player.send(putInUeueObject.toString()); //TODO renme
             } else {
                 ArrayList<Player> playerList = new ArrayList<Player>();
@@ -80,7 +80,7 @@ public class MatchMaker implements Serializable, PlayerParent {
                 playerList.add(player);
                 waitingPlayer = null;
 
-                WebGameController gameController = new WebGameController(player);
+                WebGameController gameController = new WebGameController(new Player[]{waitingPlayer, player});
                 Core.Builder builder = new Core.Builder(gameController);
                 builder.setLevel(random.nextInt(2) == 0 ? level : waitingPlayerLevel);  //TODO should it be 2? TEST
                 builder.setScore(0);

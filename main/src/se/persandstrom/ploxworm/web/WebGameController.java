@@ -9,6 +9,7 @@ import se.persandstrom.ploxworm.core.Line;
 import se.persandstrom.ploxworm.core.worm.Worm;
 import se.persandstrom.ploxworm.core.worm.board.Board;
 import se.persandstrom.ploxworm.web.api.ApiObjectFactory;
+import se.persandstrom.ploxworm.web.api.objects.EndRound;
 import se.persandstrom.ploxworm.web.api.objects.Match;
 
 import java.util.ArrayList;
@@ -18,12 +19,17 @@ public class WebGameController implements GameController {
     private final ApiObjectFactory apiObjectFactory = new ApiObjectFactory();
 
     private Core core;
-    private final Player[] playerList;
+    private final Player[] playerArray;
     private final float[][] playerAcc;
 
     public WebGameController(Player player) {
-        playerList = new Player[]{player};
-        playerAcc = new float[playerList.length][2];
+        playerArray = new Player[]{player};
+        playerAcc = new float[playerArray.length][2];
+    }
+
+    public WebGameController(Player[] playerArray) {
+        this.playerArray = playerArray;
+        playerAcc = new float[this.playerArray.length][2];
     }
 
     public void setCore(Core core) {
@@ -43,14 +49,14 @@ public class WebGameController implements GameController {
     }
 
     public void setAcc(int playerNumber, float xAcc, float yAcc) {
-//        System.out.println("setAcc: " + xAcc + ", " + yAcc);
+        System.out.println("setAcc: " + playerNumber + ", " + xAcc + ", " + yAcc);
         playerAcc[playerNumber][0] = xAcc;
         playerAcc[playerNumber][1] = yAcc;
     }
 
     @Override
     public void end(long score) {
-        System.out.println("end");
+        System.out.println("END");
     }
 
     @Override
@@ -95,19 +101,18 @@ public class WebGameController implements GameController {
 
         Match match = new Match(board.getXSize(), board.getYSize(), board.getObstacles());
 
-        for (int i = 0; i < playerList.length; i++) {
-            Player player = playerList[i];
+        for (int i = 0; i < playerArray.length; i++) {
+            Player player = playerArray[i];
             match.setYour_number(i);
-            sendToPlayer(player, "match", apiObjectFactory.createApiObject(match));
+            sendToPlayer(player, apiObjectFactory.createApiObject(match));
         }
-
     }
 
     @Override
     public void render() {
 //        System.out.println("render");
 
-        //TODO should these be gson or would tht slow stuff down? TEST IT
+        //Gson is at least 3 times slower than manually building it, so build it manually...
         JsonObject data = new JsonObject();
 
         JsonArray wormArray = new JsonArray();
@@ -137,12 +142,15 @@ public class WebGameController implements GameController {
             }
         }
 
-        send(ApiObjectFactory.TYPE_FRME, data);
+        JsonObject apiObject = apiObjectFactory.createApiObject(ApiObjectFactory.TYPE_FRAME, data);
+        sendToAll(apiObject);
     }
 
     @Override
     public void endWithWait(long score) {
         System.out.println("endWithWait");
+        JsonObject apiObject = apiObjectFactory.createApiObject(new EndRound(EndRound.EndType.end));
+        sendToAll(apiObject);
     }
 
     @Override
@@ -150,24 +158,15 @@ public class WebGameController implements GameController {
 
     }
 
-    private void send(String type, JsonElement data) {
-//TODO dess funktioner borde snrre ligg i piboecjtfctory eller nåt
-        JsonObject root = new JsonObject();
-        root.addProperty("type", type);
-        root.add("data", data);
-
-        for (Player player : playerList) {
-            player.send(root.toString());
+    private void sendToAll(JsonElement apiObject) {
+        String string = apiObject.toString();
+        for (Player player : playerArray) {
+            player.send(string);
         }
     }
 
-    private void sendToPlayer(Player player, String type, JsonElement data) {
-
-        JsonObject root = new JsonObject();
-        root.addProperty("type", type);
-        root.add("data", data);
-
-        player.send(root.toString());
+    private void sendToPlayer(Player player, JsonElement apiObject) {
+        player.send(apiObject.toString());
     }
 
 }
