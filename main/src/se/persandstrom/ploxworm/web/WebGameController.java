@@ -12,9 +12,12 @@ import se.persandstrom.ploxworm.web.api.ApiObjectFactory;
 import se.persandstrom.ploxworm.web.api.objects.EndRound;
 import se.persandstrom.ploxworm.web.api.objects.Match;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 
 public class WebGameController implements GameController {
+
+    InitHolder initHolder;
 
     private final ApiObjectFactory apiObjectFactory = new ApiObjectFactory();
 
@@ -22,14 +25,22 @@ public class WebGameController implements GameController {
     private final Player[] playerArray;
     private final float[][] playerAcc;
 
-    public WebGameController(Player player) {
+    public WebGameController(InitHolder initHolder, Player player) {
         playerArray = new Player[]{player};
         playerAcc = new float[playerArray.length][2];
+        this.initHolder = initHolder;
     }
 
-    public WebGameController(Player[] playerArray) {
+    public WebGameController(InitHolder initHolder, Player[] playerArray) {
         this.playerArray = playerArray;
         playerAcc = new float[this.playerArray.length][2];
+        this.initHolder = initHolder;
+
+        for(Player player:playerArray) {
+            if(player == null) {
+                throw new IllegalArgumentException("a player was null");
+            }
+        }
     }
 
     public void setCore(Core core) {
@@ -151,6 +162,10 @@ public class WebGameController implements GameController {
         System.out.println("endWithWait");
         JsonObject apiObject = apiObjectFactory.createApiObject(new EndRound(EndRound.EndType.end));
         sendToAll(apiObject);
+
+        for (Player player : playerArray) {
+            initHolder.addPlayer(player);
+        }
     }
 
     @Override

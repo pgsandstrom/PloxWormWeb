@@ -5,6 +5,7 @@ import se.persandstrom.ploxworm.core.Line;
 import se.persandstrom.ploxworm.core.worm.board.Apple;
 import se.persandstrom.ploxworm.core.worm.board.Board;
 import se.persandstrom.ploxworm.core.worm.board.Obstacle;
+import se.persandstrom.ploxworm.core.worm.board.StartPosition;
 
 import java.util.ArrayList;
 
@@ -26,19 +27,17 @@ public abstract class Worm {
 	//is actually just a number, like 0,1,2
 	public final int color;
 
-	int maxLength = INITIAL_LENGTH;
+	int maxLength;
+
+    StartPosition startPosition;
 
 	//positions
-	public double xPosStart;
-	public double yPosStart;
 	public double xPos;
 	public double yPos;
     double xPosOld;
     double yPosOld;
 
 	//the worms current direction is this vector:
-	public double xForceStart;
-	public double yForceStart;
 	public double xForce;
 	public double yForce;
 
@@ -53,24 +52,18 @@ public abstract class Worm {
 
 	public boolean isAlive;
 
-	public Worm(Core core, int color, double startPositionX, double startPositionY, double startSpeedX, double startSpeedY) {
+	public Worm(Core core, int color, StartPosition startPosition) {
 
 		this.core = core;
 		this.color = color;
 
-		xPosStart = startPositionX;
-		yPosStart = startPositionY;
+		this.startPosition = startPosition;
 
-		xPos = xPosStart;
-		yPos = yPosStart;
+
 		xPosOld = xPos;
 		yPosOld = yPos;
 
-		xForceStart = startSpeedX;
-		yForceStart = startSpeedY;
-
-		xForce = xForceStart;
-		yForce = yForceStart;
+        reset();
 
 		lineList = new ArrayList<Line>();
 
@@ -142,16 +135,15 @@ public abstract class Worm {
 	}
 
 	public void reset() {
-//		if (Constant.DEBUG) Log.d(TAG, "reset");
-		xPos = xPosStart;
-		yPos = yPosStart;
+        xPos = startPosition.x;
+        yPos = startPosition.y;
+        xForce = startPosition.startSpeedX;
+        yForce = startPosition.startSpeedY;
+
 		xPosOld = xPos;
 		yPosOld = yPos;
 
-		xForce = xForceStart;
-		yForce = yForceStart;
-
-		maxLength = INITIAL_LENGTH;
+maxLength = INITIAL_LENGTH;
 	}
 
 	protected boolean isLineColliding(Line newLine) {

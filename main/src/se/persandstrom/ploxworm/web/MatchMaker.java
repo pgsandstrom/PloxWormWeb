@@ -18,6 +18,9 @@ import java.util.Random;
 public class MatchMaker implements Serializable, PlayerParent {
 
     @Inject
+    InitHolder initHolder;
+
+    @Inject
     ApiObjectFactory apiObjectFactory;
 
     private final Random random = new Random();
@@ -48,7 +51,7 @@ public class MatchMaker implements Serializable, PlayerParent {
 
     private void startSinglePlayer(Player player, boolean withCpu, int level) {
         System.out.println("startSinglePlayer: " + level);
-        WebGameController gameController = new WebGameController(player);
+        WebGameController gameController = new WebGameController(initHolder, player);
         Core.Builder builder = new Core.Builder(gameController);
 //        builder.setEternalGame(false);
         builder.setLevel(level);
@@ -68,6 +71,7 @@ public class MatchMaker implements Serializable, PlayerParent {
     }
 
     private void arrangeMultiPlayer(Player player, int level) {
+
         synchronized (this) {
             if (waitingPlayer == null) {
                 waitingPlayer = player;
@@ -78,9 +82,9 @@ public class MatchMaker implements Serializable, PlayerParent {
                 ArrayList<Player> playerList = new ArrayList<Player>();
                 playerList.add(waitingPlayer);
                 playerList.add(player);
-                waitingPlayer = null;
 
-                WebGameController gameController = new WebGameController(new Player[]{waitingPlayer, player});
+                WebGameController gameController = new WebGameController(initHolder, new Player[]{waitingPlayer,
+                        player});
                 Core.Builder builder = new Core.Builder(gameController);
                 builder.setLevel(random.nextInt(2) == 0 ? level : waitingPlayerLevel);  //TODO should it be 2? TEST
                 builder.setScore(0);
@@ -89,6 +93,7 @@ public class MatchMaker implements Serializable, PlayerParent {
 
                 Game game = new Game(playerList, gameController, core);
                 game.start();
+                waitingPlayer = null;
             }
         }
     }

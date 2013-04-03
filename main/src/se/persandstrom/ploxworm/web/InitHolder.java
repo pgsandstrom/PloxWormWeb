@@ -46,7 +46,8 @@ public class InitHolder implements PlayerParent {
 
     @Override
     public void remove(Player player) {
-        //NOT IMPLEMENTED XXX log this
+        System.out.println("Player removed from InitHolder");
+        playerSet.remove(player);
     }
 
     @Override

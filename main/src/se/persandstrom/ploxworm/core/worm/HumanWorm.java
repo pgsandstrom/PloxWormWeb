@@ -1,14 +1,14 @@
 package se.persandstrom.ploxworm.core.worm;
 
 import se.persandstrom.ploxworm.core.Core;
+import se.persandstrom.ploxworm.core.worm.board.StartPosition;
 
 public class HumanWorm extends Worm {
 
 	protected static final String TAG = "HumanWorm";
 
-	public HumanWorm(Core core, int color, float startPositionX, float startPositionY, float startSpeedX,
-			float startSpeedY) {
-		super(core, color, startPositionX, startPositionY, startSpeedX, startSpeedY);
+	public HumanWorm(Core core, int color, StartPosition startPosition) {
+		super(core, color, startPosition);
 //		if (Constant.DEBUG) Log.d(TAG, "HumanWorm created");
 	}
 

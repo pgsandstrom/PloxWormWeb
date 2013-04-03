@@ -6,16 +6,17 @@ import se.persandstrom.ploxworm.core.worm.Worm;
 import se.persandstrom.ploxworm.core.worm.ai.StupidWorm;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class BoardManager {
 
-	protected final static String TAG = "BoardManager";
+    protected final static String TAG = "BoardManager";
 
-	public final static int TOTAL_LEVELS = 7;
+    public final static int TOTAL_LEVELS = 7;
 
-	public static Board getBoard(Core core, int level) {
+    public static Board getBoard(Core core, int level, BoardType type) {
 
-        if(level == 0) {
+        if (level == 0) {
 //            Log.e(TAG, "wtf not level 0 again...");
             level = 1;
             //XXX
@@ -24,336 +25,263 @@ public class BoardManager {
             //TODO fixa också att level-namn inte visas...
         }
 
-		Board board;
-		switch (level) {
-		case 1:
-			board = level1(core);
-			break;
-		case 2:
-			board = level2(core);
-			break;
-		case 3:
-			board = level3(core);
-			break;
-		case 4:
-			board = level4(core);
-			break;
-		case 5:
-			board = level5(core);
-			break;
-		case 6:
-			board = level6(core);
-			break;
-		case 7:
-			board = level7(core);
-			break;
-		default:
-			throw new AssertionError("wtf level did not exist");
-		}
+        Board board;
+        switch (level) {
+            case 1:
+                board = level1(core);
+                break;
+            case 2:
+                board = level2(core);
+                break;
+            case 3:
+                board = level3(core);
+                break;
+            case 4:
+                board = level4(core);
+                break;
+            case 5:
+                board = level5(core);
+                break;
+            case 6:
+                board = level6(core);
+                break;
+            case 7:
+                board = level7(core);
+                break;
+            default:
+                throw new IllegalArgumentException("wtf level did not exist");
+        }
 
-		for (Worm worm : board.getWormList()) {
-			worm.init(board);
-		}
+        //FIXME lägg till alla worms här beroende på input...
+        asda
 
-		return board;
-	}
+        for (Worm worm : board.getWormList()) {
+            worm.init(board);
+        }
 
-	private static Board level1(Core core) {
-		String title = "Journey begins!";
+        return board;
+    }
 
-		ArrayList<Worm> wormList = new ArrayList<Worm>();
-		ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
-		ArrayList<Apple> appleList = new ArrayList<Apple>();
-		int xSize = 800;
-		int ySize = 800;
-		int appleEatGoal = 4;
-		int appleVisibleAtOnce = 2;
+    private static Board level1(Core core) {
+        String title = "Journey begins!";
 
-		//obstacles:
+        ArrayList<Worm> wormList = new ArrayList<Worm>();
+        ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
+        ArrayList<Apple> appleList = new ArrayList<Apple>();
+        List<StartPosition> startPositionList = new ArrayList<StartPosition>();
+        int xSize = 800;
+        int ySize = 800;
+        int appleEatGoal = 4;
+        int appleVisibleAtOnce = 2;
 
-		//apples:
-		appleList.add(new Apple(false, 200, 200));
-		appleList.add(new Apple(false, 600, 200));
-		appleList.add(new Apple(false, 200, 600));
-		appleList.add(new Apple(false, 600, 600));
+        //obstacles:
 
-		//worms:
-		float startPositionX = 400;
-		float startPositionY = 400;
-		float startSpeedX = 1;
-		float startSpeedY = 1;
+        //apples:
+        appleList.add(new Apple(false, 200, 200));
+        appleList.add(new Apple(false, 600, 200));
+        appleList.add(new Apple(false, 200, 600));
+        appleList.add(new Apple(false, 600, 600));
 
-		wormList.add(new HumanWorm(core, 0, startPositionX, startPositionY, startSpeedX,
-				startSpeedY));
+        //startPositions:
+        startPositionList.add(new StartPosition(400, 400, 1, 1));
 
-		return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce);
-	}
+        return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal,
+                appleVisibleAtOnce, startPositionList);
+    }
 
-	private static Board level2(Core core) {
-		String title = "Obstacles in the way!";
+    private static Board level2(Core core) {
+        String title = "Obstacles in the way!";
 
-		ArrayList<Worm> wormList = new ArrayList<Worm>();
-		ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
-		ArrayList<Apple> appleList = new ArrayList<Apple>();
-		int xSize = 800;
-		int ySize = 800;
-		int appleEatGoal = 4;
-		int appleVisibleAtOnce = 2;
+        ArrayList<Worm> wormList = new ArrayList<Worm>();
+        ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
+        ArrayList<Apple> appleList = new ArrayList<Apple>();
+        List<StartPosition> startPositionList = new ArrayList<StartPosition>();
+        int xSize = 800;
+        int ySize = 800;
+        int appleEatGoal = 4;
+        int appleVisibleAtOnce = 2;
 
-		//obstacles:
-		obstacleList.add(new ObstacleCircle(0, 0, 200));
-		obstacleList.add(new ObstacleRectangle(600, 600, 800, 800));
+        //obstacles:
+        obstacleList.add(new ObstacleCircle(0, 0, 200));
+        obstacleList.add(new ObstacleRectangle(600, 600, 800, 800));
 
-		//apples:
-		appleList.add(new Apple(false, 150, 550));
-		appleList.add(new Apple(false, 250, 650));
-		appleList.add(new Apple(false, 550, 150));
-		appleList.add(new Apple(false, 650, 250));
+        //apples:
+        appleList.add(new Apple(false, 150, 550));
+        appleList.add(new Apple(false, 250, 650));
+        appleList.add(new Apple(false, 550, 150));
+        appleList.add(new Apple(false, 650, 250));
 
-		//worms:
-		float startPositionX = 400;
-		float startPositionY = 400;
-		float startSpeedX = 1;
-		float startSpeedY = 1;
+        //startPositions:
+        startPositionList.add(new StartPosition(400, 400, 1, 1));
 
-		wormList.add(new HumanWorm(core, 0, startPositionX, startPositionY, startSpeedX,
-				startSpeedY));
+        return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal,
+                appleVisibleAtOnce, startPositionList);
+    }
 
-		return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce);
-	}
+    private static Board level3(Core core) {
+        String title = "Trancend the border!";
 
-	private static Board level3(Core core) {
-		String title = "Trancend the border!";
+        ArrayList<Worm> wormList = new ArrayList<Worm>();
+        ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
+        ArrayList<Apple> appleList = new ArrayList<Apple>();
+        List<StartPosition> startPositionList = new ArrayList<StartPosition>();
+        int xSize = 800;
+        int ySize = 800;
+        int appleEatGoal = 4;
+        int appleVisibleAtOnce = 1;
 
-		ArrayList<Worm> wormList = new ArrayList<Worm>();
-		ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
-		ArrayList<Apple> appleList = new ArrayList<Apple>();
-		int xSize = 800;
-		int ySize = 800;
-		int appleEatGoal = 4;
-		int appleVisibleAtOnce = 1;
+        //obstacles:
+        obstacleList.add(new ObstacleRectangle(390, 0, 410, 800));
 
-		//obstacles:
-		obstacleList.add(new ObstacleRectangle(390, 0, 410, 800));
+        //apples:
+        appleList.add(new Apple(false, 200, 400));
+        appleList.add(new Apple(false, 600, 400));
 
-		//apples:
-		appleList.add(new Apple(false, 200, 400));
-		appleList.add(new Apple(false, 600, 400));
+        //startPositions:
+        startPositionList.add(new StartPosition(200, 200, 1, 1));
 
-		//worms:
-		float startPositionX = 200;
-		float startPositionY = 200;
-		float startSpeedX = 1;
-		float startSpeedY = 1;
+        return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal,
+                appleVisibleAtOnce, startPositionList);
+    }
 
-		wormList.add(new HumanWorm(core, 0, startPositionX, startPositionY, startSpeedX,
-				startSpeedY));
+    private static Board level4(Core core) {
+        String title = "Dont trancend the border!";
 
-		return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce);
-	}
+        ArrayList<Worm> wormList = new ArrayList<Worm>();
+        ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
+        ArrayList<Apple> appleList = new ArrayList<Apple>();
+        List<StartPosition> startPositionList = new ArrayList<StartPosition>();
+        int xSize = 800;
+        int ySize = 800;
+        int appleEatGoal = 6;
+        int appleVisibleAtOnce = 3;
 
-	private static Board level4(Core core) {
-		String title = "Dont trancend the border!";
+        //obstacles:
+        obstacleList.add(new ObstacleCircle(400, 400, 200));
+        obstacleList.add(new ObstacleRectangle(0, 0, 10, 800));
+        obstacleList.add(new ObstacleRectangle(0, 0, 800, 10));
+        obstacleList.add(new ObstacleRectangle(0, 790, 800, 800));
+        obstacleList.add(new ObstacleRectangle(790, 0, 800, 800));
 
-		ArrayList<Worm> wormList = new ArrayList<Worm>();
-		ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
-		ArrayList<Apple> appleList = new ArrayList<Apple>();
-		int xSize = 800;
-		int ySize = 800;
-		int appleEatGoal = 6;
-		int appleVisibleAtOnce = 3;
+        //apples:
+        appleList.add(new Apple(false, 150, 150));
+        appleList.add(new Apple(false, 150, 650));
+        appleList.add(new Apple(false, 650, 150));
+        appleList.add(new Apple(false, 650, 650));
 
-		//obstacles:
-		obstacleList.add(new ObstacleCircle(400, 400, 200));
-		obstacleList.add(new ObstacleRectangle(0, 0, 10, 800));
-		obstacleList.add(new ObstacleRectangle(0, 0, 800, 10));
-		obstacleList.add(new ObstacleRectangle(0, 790, 800, 800));
-		obstacleList.add(new ObstacleRectangle(790, 0, 800, 800));
+        //startPositions:
+        startPositionList.add(new StartPosition(120, 200, 1, 1));
 
-		//apples:
-		appleList.add(new Apple(false, 150, 150));
-		appleList.add(new Apple(false, 150, 650));
-		appleList.add(new Apple(false, 650, 150));
-		appleList.add(new Apple(false, 650, 650));
+        return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal,
+                appleVisibleAtOnce, startPositionList);
+    }
 
-		//worms:
-		float startPositionX = 120;
-		float startPositionY = 200;
-		float startSpeedX = 1;
-		float startSpeedY = 1;
+    private static Board level5(Core core) {
+        String title = "Le Lind";
 
-		wormList.add(new HumanWorm(core, 0, startPositionX, startPositionY, startSpeedX,
-				startSpeedY));
+        ArrayList<Worm> wormList = new ArrayList<Worm>();
+        ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
+        ArrayList<Apple> appleList = new ArrayList<Apple>();
+        List<StartPosition> startPositionList = new ArrayList<StartPosition>();
+        int xSize = 800;
+        int ySize = 800;
+        int appleEatGoal = 10;
+        int appleVisibleAtOnce = 2;
 
-		return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce);
-	}
+        //obstacles:
+        obstacleList.add(new ObstacleRectangle(-100, -100, 10, 900));
+        obstacleList.add(new ObstacleRectangle(-100, -100, 900, 10));
+        obstacleList.add(new ObstacleRectangle(-100, 790, 900, 900));
+        obstacleList.add(new ObstacleRectangle(790, -100, 900, 900));
+        obstacleList.add(new ObstacleCircle(200, 200, 120));
+        obstacleList.add(new ObstacleCircle(200, 600, 120));
+        obstacleList.add(new ObstacleCircle(600, 200, 120));
+        obstacleList.add(new ObstacleCircle(600, 600, 120));
 
-	private static Board level5(Core core) {
-		String title = "Le Lind";
+        //apples:
+        appleList.add(new Apple(false, 75, 75));
+        appleList.add(new Apple(false, 350, 450));
+        appleList.add(new Apple(false, 450, 350));
+        appleList.add(new Apple(false, 725, 725));
 
-		ArrayList<Worm> wormList = new ArrayList<Worm>();
-		ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
-		ArrayList<Apple> appleList = new ArrayList<Apple>();
-		int xSize = 800;
-		int ySize = 800;
-		int appleEatGoal = 10;
-		int appleVisibleAtOnce = 2;
+        //startPositions:
+        startPositionList.add(new StartPosition(200, 400, 1, 1));
 
-		//obstacles:
-		obstacleList.add(new ObstacleRectangle(-100, -100, 10, 900));
-		obstacleList.add(new ObstacleRectangle(-100, -100, 900, 10));
-		obstacleList.add(new ObstacleRectangle(-100, 790, 900, 900));
-		obstacleList.add(new ObstacleRectangle(790, -100, 900, 900));
-		obstacleList.add(new ObstacleCircle(200, 200, 120));
-		obstacleList.add(new ObstacleCircle(200, 600, 120));
-		obstacleList.add(new ObstacleCircle(600, 200, 120));
-		obstacleList.add(new ObstacleCircle(600, 600, 120));
+        return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal,
+                appleVisibleAtOnce, startPositionList);
+    }
 
-		//apples:
-		appleList.add(new Apple(false, 75, 75));
-		appleList.add(new Apple(false, 350, 450));
-		appleList.add(new Apple(false, 450, 350));
-		appleList.add(new Apple(false, 725, 725));
+    private static Board level6(Core core) {
+        String title = "Meet Bob";
 
-		//worms:
-		float startPositionX = 200;
-		float startPositionY = 400;
-		float startSpeedX = 1;
-		float startSpeedY = 1;
+        //TODO this one is identical to level 1...
 
-		wormList.add(new HumanWorm(core, 0, startPositionX, startPositionY, startSpeedX,
-				startSpeedY));
+        ArrayList<Worm> wormList = new ArrayList<Worm>();
+        ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
+        ArrayList<Apple> appleList = new ArrayList<Apple>();
+        List<StartPosition> startPositionList = new ArrayList<StartPosition>();
+        int xSize = 800;
+        int ySize = 800;
+        int appleEatGoal = 20;
+        int appleVisibleAtOnce = 2;
 
-		return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce);
-	}
+        //obstacles:
 
-	private static Board level6(Core core) {
-		String title = "Meet Bob";
+        //apples:
+        appleList.add(new Apple(false, 200, 200));
+        appleList.add(new Apple(false, 600, 200));
+        appleList.add(new Apple(false, 200, 600));
+        appleList.add(new Apple(false, 600, 600));
 
-		ArrayList<Worm> wormList = new ArrayList<Worm>();
-		ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
-		ArrayList<Apple> appleList = new ArrayList<Apple>();
-		int xSize = 800;
-		int ySize = 800;
-		int appleEatGoal = 20;
-		int appleVisibleAtOnce = 2;
+        //startPositions:
+        startPositionList.add(new StartPosition(200, 400, 1, 1));
+        startPositionList.add(new StartPosition(600, 400, 1, 1));
+        startPositionList.add(new StartPosition(400, 200, 1, 1));
+        startPositionList.add(new StartPosition(400, 600, 1, 1));
+        startPositionList.add(new StartPosition(200, 200, 1, 1));
+        startPositionList.add(new StartPosition(600, 200, 1, 1));
+        startPositionList.add(new StartPosition(200, 200, 1, 1));
+        startPositionList.add(new StartPosition(600, 600, 1, 1));
 
-		//obstacles:
+        return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal,
+                appleVisibleAtOnce, startPositionList);
+    }
 
-		//apples:
-		appleList.add(new Apple(false, 200, 200));
-		appleList.add(new Apple(false, 600, 200));
-		appleList.add(new Apple(false, 200, 600));
-		appleList.add(new Apple(false, 600, 600));
+    private static Board level7(Core core) {
+        String title = "Front screen";
 
-		//worms:
-		float startPositionX = 200;
-		float startPositionY = 400;
-		float startSpeedX = 1;
-		float startSpeedY = 1;
+        ArrayList<Worm> wormList = new ArrayList<Worm>();
+        ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
+        ArrayList<Apple> appleList = new ArrayList<Apple>();
+        List<StartPosition> startPositionList = new ArrayList<StartPosition>();
+        int xSize = 800;
+        int ySize = 800;
+        int appleEatGoal = 8;
+        int appleVisibleAtOnce = 3;
 
-		wormList.add(new HumanWorm(core, 0, startPositionX, startPositionY, startSpeedX,
-				startSpeedY));
+        //obstacles:
+        obstacleList.add(new ObstacleRectangle(0, 0, 10, 800));
+        obstacleList.add(new ObstacleRectangle(0, 0, 800, 10));
+        obstacleList.add(new ObstacleRectangle(0, 790, 800, 800));
+        obstacleList.add(new ObstacleRectangle(790, 0, 800, 800));
 
-		//computer: 
-		startPositionX = 600;
-		startPositionY = 400;
-		startSpeedX = 1;
-		startSpeedY = 1;
+        obstacleList.add(new ObstacleRectangle(100, 100, 700, 250));
+        obstacleList.add(new ObstacleRectangle(100, 350, 400, 500));
+        obstacleList.add(new ObstacleRectangle(500, 350, 700, 500));
+        obstacleList.add(new ObstacleRectangle(100, 600, 700, 700));
 
-		wormList.add(new StupidWorm(core, 1, startPositionX, startPositionY, startSpeedX,
-				startSpeedY));
+        //apples:
+        appleList.add(new Apple(false, 75, 75));
+        appleList.add(new Apple(false, 725, 75));
+        appleList.add(new Apple(false, 75, 725));
+        appleList.add(new Apple(false, 725, 725));
+        appleList.add(new Apple(false, 450, 425));
 
-		startPositionX = 400;
-		startPositionY = 200;
-		startSpeedX = 1;
-		startSpeedY = 1;
-		//
-		//		wormList.add(new StupidWorm(core,GameView.wormPaints[2], startPositionX, startPositionY, startSpeedX, startSpeedY));
-		//
-		//		startPositionX = 400;
-		//		startPositionY = 600;
-		//		startSpeedX = 1;
-		//		startSpeedY = 1;
-		//
-		//		wormList.add(new StupidWorm(core, GameView.wormPaints[3],startPositionX, startPositionY, startSpeedX, startSpeedY));
-		//		
-		//		startPositionX = 200;
-		//		startPositionY = 200;
-		//		startSpeedX = 1;
-		//		startSpeedY = 1;
-		//
-		//		wormList.add(new StupidWorm(core, GameView.wormPaints[4],startPositionX, startPositionY, startSpeedX, startSpeedY));
-		//		
-		//		startPositionX = 600;
-		//		startPositionY = 200;
-		//		startSpeedX = 1;
-		//		startSpeedY = 1;
-		//
-		//		wormList.add(new StupidWorm(core, GameView.wormPaints[5],startPositionX, startPositionY, startSpeedX, startSpeedY));
-		//		
-		//		startPositionX = 200;
-		//		startPositionY = 600;
-		//		startSpeedX = 1;
-		//		startSpeedY = 1;
-		//
-		//		wormList.add(new StupidWorm(core, GameView.wormPaints[6],startPositionX, startPositionY, startSpeedX, startSpeedY));
-		//		
-		//		startPositionX = 600;
-		//		startPositionY = 600;
-		//		startSpeedX = 1;
-		//		startSpeedY = 1;
-		//
-		//		wormList.add(new StupidWorm(core, GameView.wormPaints[7],startPositionX, startPositionY, startSpeedX, startSpeedY));
+        //startPositions:
+        startPositionList.add(new StartPosition(275, 300, 1, 1));
+        startPositionList.add(new StartPosition(550, 550, 1, 1));
 
-		return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce);
-	}
-
-	private static Board level7(Core core) {
-		String title = "Front screen";
-
-		ArrayList<Worm> wormList = new ArrayList<Worm>();
-		ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
-		ArrayList<Apple> appleList = new ArrayList<Apple>();
-		int xSize = 800;
-		int ySize = 800;
-		int appleEatGoal = 8;
-		int appleVisibleAtOnce = 3;
-
-		//obstacles:
-		obstacleList.add(new ObstacleRectangle(0, 0, 10, 800));
-		obstacleList.add(new ObstacleRectangle(0, 0, 800, 10));
-		obstacleList.add(new ObstacleRectangle(0, 790, 800, 800));
-		obstacleList.add(new ObstacleRectangle(790, 0, 800, 800));
-
-		obstacleList.add(new ObstacleRectangle(100, 100, 700, 250));
-		obstacleList.add(new ObstacleRectangle(100, 350, 400, 500));
-		obstacleList.add(new ObstacleRectangle(500, 350, 700, 500));
-		obstacleList.add(new ObstacleRectangle(100, 600, 700, 700));
-
-		//apples:
-		appleList.add(new Apple(false, 75, 75));
-		appleList.add(new Apple(false, 725, 75));
-		appleList.add(new Apple(false, 75, 725));
-		appleList.add(new Apple(false, 725, 725));
-		appleList.add(new Apple(false, 450, 425));
-
-		//worms:
-		float startPositionX = 275;
-		float startPositionY = 300;
-		float startSpeedX = 1;
-		float startSpeedY = 0;
-		wormList.add(new HumanWorm(core, 0, startPositionX, startPositionY, startSpeedX,
-				startSpeedY));
-
-		startPositionX = 550;
-		startPositionY = 550;
-		startSpeedX = 1;
-		startSpeedY = 0;
-		wormList.add(new StupidWorm(core, 1, startPositionX, startPositionY, startSpeedX,
-				startSpeedY));
-
-		return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce);
-	}
+        return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce, startPositionList);
+    }
 
 }
