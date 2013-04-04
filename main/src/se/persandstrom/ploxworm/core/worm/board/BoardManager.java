@@ -52,8 +52,21 @@ public class BoardManager {
                 throw new IllegalArgumentException("wtf level did not exist");
         }
 
-        //FIXME lägg till alla worms här beroende på input...
-        asda
+        //TODO someday this must be made much more flexible, to allow like 3 humans vs 1 cpu etc
+        Worm player1Worm = new HumanWorm(core, 0, board.getStartPositionList().get(0));
+        board.addWorm(player1Worm);
+        switch (type) {
+            case SINGLE:
+                break;
+            case VS_CPU:
+                Worm cpuWorm = new StupidWorm(core, 1, board.getStartPositionList().get(1));
+                board.addWorm(cpuWorm);
+                break;
+            case MULTI:
+                Worm player2Worm = new HumanWorm(core, 0, board.getStartPositionList().get(0));
+                board.addWorm(player2Worm);
+                break;
+        }
 
         for (Worm worm : board.getWormList()) {
             worm.init(board);
@@ -65,7 +78,6 @@ public class BoardManager {
     private static Board level1(Core core) {
         String title = "Journey begins!";
 
-        ArrayList<Worm> wormList = new ArrayList<Worm>();
         ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
         ArrayList<Apple> appleList = new ArrayList<Apple>();
         List<StartPosition> startPositionList = new ArrayList<StartPosition>();
@@ -84,15 +96,15 @@ public class BoardManager {
 
         //startPositions:
         startPositionList.add(new StartPosition(400, 400, 1, 1));
+        startPositionList.add(new StartPosition(600, 600, 1, 1));
 
-        return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal,
-                appleVisibleAtOnce, startPositionList);
+        return new Board(core, title, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce,
+                startPositionList);
     }
 
     private static Board level2(Core core) {
         String title = "Obstacles in the way!";
 
-        ArrayList<Worm> wormList = new ArrayList<Worm>();
         ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
         ArrayList<Apple> appleList = new ArrayList<Apple>();
         List<StartPosition> startPositionList = new ArrayList<StartPosition>();
@@ -114,14 +126,13 @@ public class BoardManager {
         //startPositions:
         startPositionList.add(new StartPosition(400, 400, 1, 1));
 
-        return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal,
-                appleVisibleAtOnce, startPositionList);
+        return new Board(core, title, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce,
+                startPositionList);
     }
 
     private static Board level3(Core core) {
         String title = "Trancend the border!";
 
-        ArrayList<Worm> wormList = new ArrayList<Worm>();
         ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
         ArrayList<Apple> appleList = new ArrayList<Apple>();
         List<StartPosition> startPositionList = new ArrayList<StartPosition>();
@@ -140,14 +151,13 @@ public class BoardManager {
         //startPositions:
         startPositionList.add(new StartPosition(200, 200, 1, 1));
 
-        return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal,
-                appleVisibleAtOnce, startPositionList);
+        return new Board(core, title, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce,
+                startPositionList);
     }
 
     private static Board level4(Core core) {
         String title = "Dont trancend the border!";
 
-        ArrayList<Worm> wormList = new ArrayList<Worm>();
         ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
         ArrayList<Apple> appleList = new ArrayList<Apple>();
         List<StartPosition> startPositionList = new ArrayList<StartPosition>();
@@ -172,14 +182,13 @@ public class BoardManager {
         //startPositions:
         startPositionList.add(new StartPosition(120, 200, 1, 1));
 
-        return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal,
-                appleVisibleAtOnce, startPositionList);
+        return new Board(core, title, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce,
+                startPositionList);
     }
 
     private static Board level5(Core core) {
         String title = "Le Lind";
 
-        ArrayList<Worm> wormList = new ArrayList<Worm>();
         ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
         ArrayList<Apple> appleList = new ArrayList<Apple>();
         List<StartPosition> startPositionList = new ArrayList<StartPosition>();
@@ -207,8 +216,8 @@ public class BoardManager {
         //startPositions:
         startPositionList.add(new StartPosition(200, 400, 1, 1));
 
-        return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal,
-                appleVisibleAtOnce, startPositionList);
+        return new Board(core, title, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce,
+                startPositionList);
     }
 
     private static Board level6(Core core) {
@@ -216,7 +225,6 @@ public class BoardManager {
 
         //TODO this one is identical to level 1...
 
-        ArrayList<Worm> wormList = new ArrayList<Worm>();
         ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
         ArrayList<Apple> appleList = new ArrayList<Apple>();
         List<StartPosition> startPositionList = new ArrayList<StartPosition>();
@@ -243,14 +251,13 @@ public class BoardManager {
         startPositionList.add(new StartPosition(200, 200, 1, 1));
         startPositionList.add(new StartPosition(600, 600, 1, 1));
 
-        return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal,
-                appleVisibleAtOnce, startPositionList);
+        return new Board(core, title, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce,
+                startPositionList);
     }
 
     private static Board level7(Core core) {
         String title = "Front screen";
 
-        ArrayList<Worm> wormList = new ArrayList<Worm>();
         ArrayList<Obstacle> obstacleList = new ArrayList<Obstacle>();
         ArrayList<Apple> appleList = new ArrayList<Apple>();
         List<StartPosition> startPositionList = new ArrayList<StartPosition>();
@@ -281,7 +288,7 @@ public class BoardManager {
         startPositionList.add(new StartPosition(275, 300, 1, 1));
         startPositionList.add(new StartPosition(550, 550, 1, 1));
 
-        return new Board(core, title, wormList, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce, startPositionList);
+        return new Board(core, title, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce, startPositionList);
     }
 
 }

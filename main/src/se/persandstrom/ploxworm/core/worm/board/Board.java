@@ -17,9 +17,9 @@ public class Board {
 
     public final String title;
 
-    private final ArrayList<Obstacle> obstacleList;
+    private final List<Obstacle> obstacleList;
 
-    private final ArrayList<Apple> appleList;
+    private final List<Apple> appleList;
 
     private final List<StartPosition> startPositionList;
 
@@ -30,7 +30,7 @@ public class Board {
     private final int xSize;
     private final int ySize;
 
-    ArrayList<Worm> wormList;
+    List<Worm> wormList;
 
     //TODO: Fix "aliveWorms" that calculates stuff u know
 
@@ -44,6 +44,7 @@ public class Board {
         this.ySize = ySize;
         this.appleEatGoal = appleEatGoal;
         this.startPositionList = startPositionList;
+        this.wormList = new ArrayList<Worm>();
 
         hasPlacedGoldApple = false;
         random = new Random();
@@ -58,11 +59,15 @@ public class Board {
         }
     }
 
-    public ArrayList<Worm> getWormList() {
+    public void addWorm(Worm worm) {
+        wormList.add(worm);
+    }
+
+    public List<Worm> getWormList() {
         return wormList;
     }
 
-    public ArrayList<Obstacle> getObstacles() {
+    public List<Obstacle> getObstacles() {
         return obstacleList;
     }
 
@@ -70,8 +75,12 @@ public class Board {
         this.appleEatGoal = appleEatGoal;
     }
 
-    public ArrayList<Apple> getApples() {
+    public List<Apple> getApples() {
         return appleList;
+    }
+
+    public List<StartPosition> getStartPositionList() {
+        return startPositionList;
     }
 
     public void ateApple(Apple eatenApple) {

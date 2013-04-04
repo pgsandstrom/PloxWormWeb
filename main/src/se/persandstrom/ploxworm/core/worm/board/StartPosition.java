@@ -7,13 +7,13 @@ package se.persandstrom.ploxworm.core.worm.board;
  */
 public class StartPosition {
 
-    public final int x;
-    public final int y;
+    public final double x;
+    public final double y;
 
-    public final int startSpeedX;
-    public final int startSpeedY;
+    public final double startSpeedX;
+    public final double startSpeedY;
 
-    public StartPosition(int x, int y, int startSpeedX, int startSpeedY) {
+    public StartPosition(double x, double y, double startSpeedX, double startSpeedY) {
         this.x = x;
         this.y = y;
         this.startSpeedX = startSpeedX;

@@ -2,6 +2,7 @@ package se.persandstrom.ploxworm.core.worm;
 
 import se.persandstrom.ploxworm.core.Core;
 import se.persandstrom.ploxworm.core.Line;
+import se.persandstrom.ploxworm.core.worm.board.StartPosition;
 
 import java.util.Random;
 
@@ -29,9 +30,8 @@ public abstract class ComputerWorm extends Worm {
 
     protected Random random;
 
-    public ComputerWorm(Core core, int color, double startPositionX, double startPositionY, double startSpeedX,
-                        double startSpeedY) {
-        super(core, color, startPositionX, startPositionY, startSpeedX, startSpeedY);
+    public ComputerWorm(Core core, int color, StartPosition startPosition) {
+        super(core, color, startPosition);
         random = new Random();
 //		if (Constant.DEBUG) Log.d(TAG, "ComputerWorm created");
     }

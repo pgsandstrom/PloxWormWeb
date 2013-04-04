@@ -2,6 +2,7 @@ package se.persandstrom.ploxworm.web;
 
 import com.google.gson.JsonObject;
 import se.persandstrom.ploxworm.core.Core;
+import se.persandstrom.ploxworm.core.worm.board.BoardType;
 import se.persandstrom.ploxworm.web.api.ApiObjectFactory;
 import se.persandstrom.ploxworm.web.api.objects.MatchRequest;
 
@@ -55,12 +56,12 @@ public class MatchMaker implements Serializable, PlayerParent {
         Core.Builder builder = new Core.Builder(gameController);
 //        builder.setEternalGame(false);
         builder.setLevel(level);
+        builder.setBoardType(withCpu ? BoardType.VS_CPU : BoardType.SINGLE);
 //        builder.setMakePlayersToAi(false);
         builder.setScore(0);
 
         List<Player> playerList = new ArrayList<>();
         playerList.add(player);
-        //TODO add cpu if u know
 
         Core core = builder.build();
         gameController.setCore(core);
@@ -87,6 +88,7 @@ public class MatchMaker implements Serializable, PlayerParent {
                         player});
                 Core.Builder builder = new Core.Builder(gameController);
                 builder.setLevel(random.nextInt(2) == 0 ? level : waitingPlayerLevel);  //TODO should it be 2? TEST
+                builder.setBoardType(BoardType.MULTI);
                 builder.setScore(0);
                 Core core = builder.build();
                 gameController.setCore(core);

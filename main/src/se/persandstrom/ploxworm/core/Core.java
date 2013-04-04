@@ -5,8 +5,10 @@ import se.persandstrom.ploxworm.core.worm.Worm;
 import se.persandstrom.ploxworm.core.worm.ai.StupidWorm;
 import se.persandstrom.ploxworm.core.worm.board.Board;
 import se.persandstrom.ploxworm.core.worm.board.BoardManager;
+import se.persandstrom.ploxworm.core.worm.board.BoardType;
+import se.persandstrom.ploxworm.core.worm.board.StartPosition;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class Core {
 
@@ -32,7 +34,7 @@ public class Core {
     int aliveAiCount = 0;
 
     Board board;
-    ArrayList<Worm> wormList;
+    List<Worm> wormList;
 
     // specific game settings:
 
@@ -44,9 +46,9 @@ public class Core {
         this.gameController = gameController;
     }
 
-    public void setLevel(int level) {
+    public void setLevel(int level, BoardType boardType) {  //TODO level should be inside BoardType or something
         this.level = level;
-        Board board = BoardManager.getBoard(this, level);
+        Board board = BoardManager.getBoard(this, level, boardType);
         this.board = board;
     }
 
@@ -54,15 +56,15 @@ public class Core {
         this.score = score;
     }
 
-    public ArrayList<Worm> getWormList() {
+    public List<Worm> getWormList() {
         return wormList;
     }
 
-    public void startGame(int level, long score) {
+    public void startGame(int level, long score, BoardType boardType) {
         // if (Constant.DEBUG)
         // Log.d(TAG, "startGame: " + level + ", " + score);
 
-        Board board = BoardManager.getBoard(this, level);
+        Board board = BoardManager.getBoard(this, level, boardType);
         this.level = level;
         this.score = score;
         this.board = board;
@@ -92,7 +94,7 @@ public class Core {
         new StartCountDownThread().start();
     }
 
-    private void setAiCounter(ArrayList<Worm> wormList) {
+    private void setAiCounter(List<Worm> wormList) {
         for (Worm worm : wormList) {
             if (worm.isAi()) {
                 aliveAiCount++;
@@ -155,6 +157,7 @@ public class Core {
                     if (eternalGame) {
                         worm.reset();
                     } else {
+                        //TODO check if the level is finished
                         worm.isAlive = false;
                         aliveAiCount--;
                     }
@@ -271,7 +274,8 @@ public class Core {
                 gameController.setMessage("" + countSteps);
                 try {
                     Thread.sleep(STEP_WAITING_TIME);
-                } catch (InterruptedException quiet) {
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
                 countSteps--;
             } while (countSteps > 0);
@@ -294,6 +298,7 @@ public class Core {
         private Core core;
 
         private int level = 1;
+        private BoardType boardType = BoardType.SINGLE;
         private long score = 0;
         boolean makePlayersToAi = false;
         boolean eternalGame = false;
@@ -306,6 +311,10 @@ public class Core {
 
         public void setLevel(int level) {
             this.level = level;
+        }
+
+        public void setBoardType(BoardType boardType) {
+            this.boardType = boardType;
         }
 
         public void setScore(long score) {
@@ -321,6 +330,7 @@ public class Core {
         }
 
         public Core build() {
+            core.setLevel(level, boardType);
             if (isBuilt) {
                 throw new IllegalStateException("cannot build twice");
             } else {
@@ -340,7 +350,6 @@ public class Core {
          * set the variables that has been specified to the core
          */
         private void setupCore() {
-            core.setLevel(level);
             core.setScore(score);
             core.eternalGame = eternalGame;
             if (eternalGame) {
@@ -353,12 +362,12 @@ public class Core {
          * Set all human controlled worms to become computers controlled.
          */
         private void makePlayersToAi() {
-            ArrayList<Worm> wormList = core.board.getWormList();
+            List<Worm> wormList = core.board.getWormList();
             for (int i = 0; i < wormList.size(); i++) {
                 Worm worm = wormList.get(i);
                 if (worm instanceof HumanWorm) {
-                    StupidWorm stupidWorm = new StupidWorm(core, worm.color, worm.xPos, worm.yPos, worm.xForce,
-                            worm.yForce);
+                    StupidWorm stupidWorm = new StupidWorm(core, worm.color, new StartPosition(worm.xPos, worm.yPos,
+                            worm.xForce, worm.yForce));
                     stupidWorm.init(worm.board);
                     wormList.remove(i);
                     wormList.add(i, stupidWorm);

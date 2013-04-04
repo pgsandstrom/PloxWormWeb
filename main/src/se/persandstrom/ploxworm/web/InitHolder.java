@@ -40,7 +40,8 @@ public class InitHolder implements PlayerParent {
             playerSet.remove(player);
             matchMaker.addPlayer(player, matchRequest);
         } else {
-            throw new IllegalStateException("received wrong class: " + apiObjectFactory.getType(message));
+            //the client might send a few "direction"-messages after he died, then this will happen
+            System.out.println("received wrong class: " + apiObjectFactory.getType(message));
         }
     }
 

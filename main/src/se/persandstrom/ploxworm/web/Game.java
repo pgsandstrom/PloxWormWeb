@@ -46,7 +46,7 @@ public class Game implements PlayerParent {
 
         String type = message.get("type").getAsString();
         JsonObject data = message.get("data").getAsJsonObject();
-        System.out.println("type: " + type);
+//        System.out.println("type: " + type);
         if ("direction".equals(type)) {
             gameController.setAcc(playerNumber, data.get("x").getAsFloat(), data.get("y").getAsFloat());
         } else {

@@ -8,6 +8,7 @@ import se.persandstrom.ploxworm.core.worm.board.Obstacle;
 import se.persandstrom.ploxworm.core.worm.board.StartPosition;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Worm {
 
@@ -46,9 +47,9 @@ public abstract class Worm {
 	float boardSizeY;
 
 	public Board board;
-	public final ArrayList<Line> lineList;
-	public ArrayList<Obstacle> obstacleList;
-	public ArrayList<Apple> appleList;
+	public final List<Line> lineList;
+	public List<Obstacle> obstacleList;
+	public List<Apple> appleList;
 
 	public boolean isAlive;
 
@@ -79,7 +80,7 @@ public abstract class Worm {
 //		if (Constant.DEBUG) Log.d(TAG, "obstacleList:" + obstacleList.size());
 	}
 
-	public ArrayList<Line> getLineList() {
+	public List<Line> getLineList() {
 		return lineList;
 	}
 
@@ -163,10 +164,10 @@ maxLength = INITIAL_LENGTH;
 		}
 
 		//compare to worms:
-		ArrayList<Worm> worms = board.getWormList();
+		List<Worm> worms = board.getWormList();
 		for (Worm worm : worms) {
 			if (!worm.equals(this)) {
-				ArrayList<Line> otherWormLineList = worm.getLineList();
+				List<Line> otherWormLineList = worm.getLineList();
 				for (Line line : otherWormLineList) {
 					if (isIntersection(newLine, line)) {
 						//						if (Constant.DEBUG) Log.d(TAG, "BAM ON WORM!");

@@ -14,6 +14,7 @@ import se.persandstrom.ploxworm.web.api.objects.Match;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.List;
 
 public class WebGameController implements GameController {
 
@@ -60,7 +61,6 @@ public class WebGameController implements GameController {
     }
 
     public void setAcc(int playerNumber, float xAcc, float yAcc) {
-        System.out.println("setAcc: " + playerNumber + ", " + xAcc + ", " + yAcc);
         playerAcc[playerNumber][0] = xAcc;
         playerAcc[playerNumber][1] = yAcc;
     }
@@ -129,13 +129,13 @@ public class WebGameController implements GameController {
         JsonArray wormArray = new JsonArray();
         data.add("worms", wormArray);
 
-        ArrayList<Worm> wormList = core.getWormList();
+        List<Worm> wormList = core.getWormList();
         for (int wormNumber = 0; wormNumber < wormList.size(); wormNumber++) {
             Worm worm = wormList.get(wormNumber);
             JsonArray lineArray = new JsonArray();
             wormArray.add(lineArray);
 
-            ArrayList<Line> lineList = worm.getLineList();
+            List<Line> lineList = worm.getLineList();
             for (int lineNumber = 0; lineNumber < lineList.size(); lineNumber++) {
                 Line line = lineList.get(lineNumber);
 
