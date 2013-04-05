@@ -29,13 +29,12 @@ public class ApiObjectFactory {
     public Class getTypeClass(JsonObject jsonObject) {
         String type = jsonObject.get(TYPE).getAsString();
 
-        switch (type) {
-            case MatchRequest.TYPE:
-                return MatchRequest.class;
-            default:
-                //Use this when this is actually used lol...
+        if(MatchRequest.TYPE.equals(type)) {
+            return MatchRequest.class;
+        } else {
+            //Use this when this is actually used lol...
 //                throw new IllegalStateException("unknown type");
-                return null;
+            return null;
         }
     }
 

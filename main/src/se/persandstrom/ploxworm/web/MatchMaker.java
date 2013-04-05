@@ -60,7 +60,7 @@ public class MatchMaker implements Serializable, PlayerParent {
 //        builder.setMakePlayersToAi(false);
         builder.setScore(0);
 
-        List<Player> playerList = new ArrayList<>();
+        List<Player> playerList = new ArrayList<Player>();
         playerList.add(player);
 
         Core core = builder.build();

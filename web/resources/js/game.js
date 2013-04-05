@@ -42,7 +42,9 @@
             if ("WebSocket" in window) {
                 window.ploxworm.log("Opening websocket");
 
-                ws = new WebSocket('ws://' + window.location.hostname + ':' + location.port + '/chat');
+                var webSocketUrl = 'ws://' + window.location.hostname + ':' + location.port + '/chat';
+                window.ploxworm.log("webSocketUrl: " + webSocketUrl);
+                ws = new WebSocket(webSocketUrl);
                 ws.onopen = function () {
                     window.ploxworm.log("Connection open!");
                     sendGameRequest();
