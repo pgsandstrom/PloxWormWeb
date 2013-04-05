@@ -42,7 +42,7 @@
             if ("WebSocket" in window) {
                 window.ploxworm.log("Opening websocket");
 
-                var webSocketUrl = 'ws://' + window.location.hostname + ':' + location.port + '/chat';
+                var webSocketUrl = 'ws://' + window.location.hostname + ':' + getPort() + '/chat';
                 window.ploxworm.log("webSocketUrl: " + webSocketUrl);
                 ws = new WebSocket(webSocketUrl);
                 ws.onopen = function () {
@@ -211,6 +211,23 @@
                 if (gameRunning) {
                     setTimeout(updateWormDirection, 50);
                 }
+            }
+        }
+
+        function getPort() {
+            //            if (location.port != '') {
+            if (typeof location.port !== "undefined" && location.port !== "") {
+                window.ploxworm.log("found port lol: \"" + location.port + "\"");
+                return location.port;
+            } else if (location.protocol === 'http') {
+                return 80;
+            }
+            else if (location.protocol === 'https') {
+                return 443;
+            } else {
+                window.ploxworm.log("FUCK! No port found! Going with 80!");
+                window.ploxworm.log("we found this lame port: \"" + location.port + "\"");
+                return 80;
             }
         }
 
