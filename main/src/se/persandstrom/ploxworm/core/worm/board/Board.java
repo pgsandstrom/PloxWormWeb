@@ -1,6 +1,7 @@
 package se.persandstrom.ploxworm.core.worm.board;
 
 import se.persandstrom.ploxworm.core.Core;
+import se.persandstrom.ploxworm.core.worm.HumanWorm;
 import se.persandstrom.ploxworm.core.worm.Worm;
 
 import java.util.ArrayList;
@@ -30,9 +31,7 @@ public class Board {
     private final int xSize;
     private final int ySize;
 
-    List<Worm> wormList;
-
-    //TODO: Fix "aliveWorms" that calculates stuff u know
+    private List<Worm> wormList;
 
     public Board(Core core, String title, ArrayList<Obstacle> obstacleList, ArrayList<Apple> appleList, int xSize,
                  int ySize, int appleEatGoal, int appleVisibleAtOnce, List<StartPosition> startPositionList) {
@@ -83,16 +82,16 @@ public class Board {
         return startPositionList;
     }
 
-    public void ateApple(Apple eatenApple) {
+    public void ateApple(Worm worm, Apple eatenApple) {
         //		if (Constant.DEBUG) Log.d(TAG, "ateApple:" + eatenApple.positionX);
 
-        if (eatenApple.isGold) {
-            core.victory();
+        if (!worm.isAi() && eatenApple.isGold) {
+            core.victory(worm);
             return;
         }
 
         applesEaten++;
-        core.ateApple();
+        core.ateApple(worm);
 
         while (true) {
             int randomNumber = random.nextInt(appleList.size());

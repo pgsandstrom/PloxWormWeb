@@ -56,7 +56,7 @@ public class Game implements PlayerParent {
 
     @Override
     public void remove(Player player) {
-        //TODO if multiplayer, make other player winner
+        //TODO don't just stop
         core.stop();
     }
 

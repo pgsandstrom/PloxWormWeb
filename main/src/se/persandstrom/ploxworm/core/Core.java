@@ -30,7 +30,7 @@ public class Core {
     int counter = 0;
 
     int level;
-    long score = 0;
+    int aliveHumanCount = 0;
     int aliveAiCount = 0;
 
     Board board;
@@ -40,7 +40,6 @@ public class Core {
 
     // resurrect on death and never spawn gold apple
     private boolean eternalGame = false;
-    private float xacc;
 
     private Core(GameController gameController) {
         this.gameController = gameController;
@@ -52,8 +51,15 @@ public class Core {
         this.board = board;
     }
 
+    /**
+     * Sets the score for all worms
+     *
+     * @param score
+     */
     public void setScore(long score) {
-        this.score = score;
+        for (Worm worm : wormList) {
+            worm.score = score;
+        }
     }
 
     public List<Worm> getWormList() {
@@ -66,17 +72,11 @@ public class Core {
 
         Board board = BoardManager.getBoard(this, level, boardType);
         this.level = level;
-        this.score = score;
         this.board = board;
 
-        wormList = board.getWormList();
-        setAiCounter(wormList);
+        startGame();
 
-        gameController.setNewBoard(board);
-
-        gameController.setTitle(board.title);
-
-        new StartCountDownThread().start();
+        setScore(score);
     }
 
     public void startGame() {
@@ -84,20 +84,20 @@ public class Core {
         // Log.d(TAG, "startGame");
 
         wormList = board.getWormList();
-
-        setAiCounter(wormList);
+        setWormTypeCounter(wormList);
 
         gameController.setNewBoard(board);
-
         gameController.setTitle(board.title);
 
         new StartCountDownThread().start();
     }
 
-    private void setAiCounter(List<Worm> wormList) {
+    private void setWormTypeCounter(List<Worm> wormList) {
         for (Worm worm : wormList) {
             if (worm.isAi()) {
                 aliveAiCount++;
+            } else {
+                aliveHumanCount++;
             }
         }
     }
@@ -114,8 +114,6 @@ public class Core {
         }
         gameThread = new GameThread();
         gameThread.start();
-
-        gameController.setScoreBoard(String.valueOf(score));
     }
 
     public void stop() {
@@ -124,14 +122,50 @@ public class Core {
         gameRunning = false;
     }
 
-    public void death(boolean waitBeforeExiting) {
-        stop();
+    /**
+     * This can be called even if the worm disconnects, closes the app or whatever
+     *
+     * @param worm
+     * @param expected if the dead worm expected the game to end, i.e. terminated the session themselves somehow
+     */
+    public void death(Worm worm, boolean expected) {
+        gameController.death(worm, expected);
 
-        if (waitBeforeExiting) {
-            gameController.endWithWait(score);
+        if (worm.isAi()) {
+            aliveAiCount--;
         } else {
-            gameController.end(score);
+            aliveHumanCount--;
+        }
 
+        worm.isAlive = false;
+
+        boolean endGame = false;
+
+        if ((!worm.isAi() && aliveHumanCount == 1)) {
+            //human died, only one human left
+            endGame = true;
+        } else if ((!worm.isAi() && aliveHumanCount == 0)) {
+            //human died, no humans left
+            endGame = true;
+        } else if (worm.isAi() && aliveAiCount == 0 && aliveHumanCount == 1) {
+            //ai died, a human is all that is left
+            endGame = true;
+        }
+
+        //TODO do appropriate stuff, like ending game, if needed
+        if (endGame) {
+            stop(); //FIXME TODO PLOX DO!
+        }
+//        gameController.end(score, expected);
+
+
+    }
+
+    public void victory(Worm victoryWorm) {
+        for (Worm worm : wormList) {
+            if (worm instanceof HumanWorm) {
+
+            }
         }
     }
 
@@ -151,16 +185,10 @@ public class Core {
             Worm worm = wormList.get(i);
             int makeMove = worm.makeMove();
             if (makeMove == Worm.MOVE_DEATH) {
-                if (worm instanceof HumanWorm) {
-                    death(true);
+                if (eternalGame) {
+                    worm.reset();
                 } else {
-                    if (eternalGame) {
-                        worm.reset();
-                    } else {
-                        //TODO check if the level is finished
-                        worm.isAlive = false;
-                        aliveAiCount--;
-                    }
+                    death(worm, false);
                 }
             }
         }
@@ -168,37 +196,20 @@ public class Core {
         gameController.render();
     }
 
-    public void ateApple() {
-        increaseScore(POINTS_APPLE);
+    public void ateApple(Worm worm) {
+        increaseScore(worm, POINTS_APPLE);
     }
 
-    public void victory() {
-
-        if (eternalGame) {
-
-        }
-
-        increaseScore(POINTS_VICTORY);
-        stop();
-
-        gameController.victory(score);
+    private void increaseScore(Worm worm, int newScore) {
+        worm.score += newScore;
+        gameController.updateScore(wormList);
     }
 
-    private void increaseScore(int newScore) {
-        score += newScore;
-        gameController.updateScore(score);
-    }
-
-
-    public void backPress() {
-        death(false);
-    }
-
-    public float getXacc(Worm worm) {
+    public float getXacc(HumanWorm worm) {
         return gameController.getXacc(worm);
     }
 
-    public float getYacc(Worm worm) {
+    public float getYacc(HumanWorm worm) {
         return gameController.getYacc(worm);
     }
 
@@ -225,44 +236,6 @@ public class Core {
         }
     }
 
-//	private class StartCountDownThread extends AsyncTask<Void, Integer, Void> {
-//
-//		private static final int STEP_WAITING_TIME = 300;
-//
-//		int countSteps = 3;
-//
-//		public StartCountDownThread() {
-//		}
-//
-//		@Override
-//		protected Void doInBackground(Void... params) {
-//
-//			do {
-//				publishProgress(countSteps);
-//				try {
-//					Thread.sleep(STEP_WAITING_TIME);
-//				} catch (InterruptedException quiet) {
-//				}
-//				countSteps--;
-//			} while (countSteps > 0);
-//
-//			return null;
-//		}
-//
-//		@Override
-//		protected void onProgressUpdate(Integer... values) {
-//			gameController.setMessage(String.valueOf(values[0]));
-//		}
-//
-//		@Override
-//		protected void onPostExecute(Void result) {
-//			gameController.hideTitle();
-//			gameController.hideMessage();
-//
-//			go();
-//		}
-//	}
-
     private class StartCountDownThread extends Thread {
         private static final int STEP_WAITING_TIME = 300;
 
@@ -271,7 +244,7 @@ public class Core {
         @Override
         public void run() {
             do {
-                gameController.setMessage("" + countSteps);
+                gameController.showMessage("" + countSteps);
                 try {
                     Thread.sleep(STEP_WAITING_TIME);
                 } catch (InterruptedException e) {

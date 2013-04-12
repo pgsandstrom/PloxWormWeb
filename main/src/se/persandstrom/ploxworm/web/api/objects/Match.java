@@ -22,7 +22,7 @@ public class Match {
         this.obstacles = obstacles;
     }
 
-    public void setYour_number(int your_number) {
-        this.your_number = your_number;
+    public void setYourNumber(int yourNumber) {
+        this.your_number = yourNumber;
     }
 }

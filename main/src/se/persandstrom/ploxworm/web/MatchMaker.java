@@ -75,11 +75,13 @@ public class MatchMaker implements Serializable, PlayerParent {
 
         synchronized (this) {
             if (waitingPlayer == null) {
+                //put in queue
                 waitingPlayer = player;
                 waitingPlayerLevel = level;
-                JsonObject putInUeueObject = apiObjectFactory.createApiObject(ApiObjectFactory.TYPE_PUT_IN_QUEUE);
-                player.send(putInUeueObject.toString()); //TODO renme
+                JsonObject putInQueueObject = apiObjectFactory.createApiObject(ApiObjectFactory.TYPE_PUT_IN_QUEUE);
+                player.send(putInQueueObject.toString());
             } else {
+                //start game!
                 ArrayList<Player> playerList = new ArrayList<Player>();
                 playerList.add(waitingPlayer);
                 playerList.add(player);
@@ -87,7 +89,7 @@ public class MatchMaker implements Serializable, PlayerParent {
                 WebGameController gameController = new WebGameController(initHolder, new Player[]{waitingPlayer,
                         player});
                 Core.Builder builder = new Core.Builder(gameController);
-                builder.setLevel(random.nextInt(2) == 0 ? level : waitingPlayerLevel);  //TODO should it be 2? TEST
+                builder.setLevel(random.nextInt(2) == 0 ? level : waitingPlayerLevel);  //XXX should it be 2? TEST!
                 builder.setBoardType(BoardType.MULTI);
                 builder.setScore(0);
                 Core core = builder.build();

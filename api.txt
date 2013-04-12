@@ -60,6 +60,7 @@
 {
 	type: end_round
 	data : {
+		score: 1
 		type: {won, lost, end}
 	}
 }

@@ -15,6 +15,8 @@ public class Player {
 
     private final JsonParser parser;
 
+    private int yourNumber;
+
     public Player(SimpleWebSocket ws) {
         this.ws = ws;
         ws.setOwner(this);
@@ -57,6 +59,14 @@ public class Player {
         System.out.println("open!");
         connected = true;
         parent.open(this);
+    }
+
+    public int getYourNumber() {
+        return yourNumber;
+    }
+
+    public void setYourNumber(int yourNumber) {
+        this.yourNumber = yourNumber;
     }
 }
 

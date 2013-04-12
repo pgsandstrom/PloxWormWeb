@@ -25,7 +25,6 @@
         });
 
         function prepareGame() {
-            //TODO flytta tillbaka spelaren till initholder eller nåt när han dör
             if (!ws || ws.readyState !== 1) {
                 if (ws) {
                     window.ploxworm.log("websocket readystate: " + ws.readyState);
@@ -215,19 +214,20 @@
         }
 
         function getPort() {
-            //            if (location.port != '') {
             if (typeof location.port !== "undefined" && location.port !== "") {
                 window.ploxworm.log("found port lol: \"" + location.port + "\"");
                 return location.port;
             } else if (location.protocol === 'http') {
                 return 80;
-            }
-            else if (location.protocol === 'https') {
+            } else if (location.protocol === 'https') {
                 return 443;
+            } else if (typeof location.port === "undefined") {
+                window.ploxworm.log("Port was undefined! Going with 8080!");
+                return 8080;
             } else {
-                window.ploxworm.log("FUCK! No port found! Going with 80!");
+                window.ploxworm.log("FUCK! No port found! Going with 8080!");
                 window.ploxworm.log("we found this lame port: \"" + location.port + "\"");
-                return 80;
+                return 8080;
             }
         }
 

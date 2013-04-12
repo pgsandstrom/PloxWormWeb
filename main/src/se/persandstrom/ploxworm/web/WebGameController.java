@@ -6,14 +6,13 @@ import com.google.gson.JsonObject;
 import se.persandstrom.ploxworm.core.Core;
 import se.persandstrom.ploxworm.core.GameController;
 import se.persandstrom.ploxworm.core.Line;
+import se.persandstrom.ploxworm.core.worm.HumanWorm;
 import se.persandstrom.ploxworm.core.worm.Worm;
 import se.persandstrom.ploxworm.core.worm.board.Board;
 import se.persandstrom.ploxworm.web.api.ApiObjectFactory;
 import se.persandstrom.ploxworm.web.api.objects.EndRound;
 import se.persandstrom.ploxworm.web.api.objects.Match;
 
-import javax.inject.Inject;
-import java.util.ArrayList;
 import java.util.List;
 
 public class WebGameController implements GameController {
@@ -37,8 +36,8 @@ public class WebGameController implements GameController {
         playerAcc = new float[this.playerArray.length][2];
         this.initHolder = initHolder;
 
-        for(Player player:playerArray) {
-            if(player == null) {
+        for (Player player : playerArray) {
+            if (player == null) {
                 throw new IllegalArgumentException("a player was null");
             }
         }
@@ -49,15 +48,18 @@ public class WebGameController implements GameController {
     }
 
     @Override
-    public float getXacc(Worm player) {
-        //TODO FIXME i need to give each worm corresponding number, so I can give correct acceleration
-        return playerAcc[0][0];
+    public float getXacc(HumanWorm worm) {
+        return playerAcc[worm.getPlayerNumber()][0];
     }
 
     @Override
-    public float getYacc(Worm player) {
-        //TODO FIXME as above
-        return playerAcc[0][1];
+    public float getYacc(HumanWorm worm) {
+        return playerAcc[worm.getPlayerNumber()][1];
+    }
+
+    @Override
+    public void death(Worm worm, boolean expected) {
+        //XXX NOT IMPLEMENTED
     }
 
     public void setAcc(int playerNumber, float xAcc, float yAcc) {
@@ -66,18 +68,8 @@ public class WebGameController implements GameController {
     }
 
     @Override
-    public void end(long score) {
-        System.out.println("END");
-    }
-
-    @Override
-    public void victory(long score) {
-        System.out.println("victory");
-    }
-
-    @Override
-    public void setScoreBoard(String score) {
-        System.out.println("setScoreBoard: " + score);
+    public void updateScore(List<Worm> wormList) {
+        System.out.println("updateScore: " + wormList);
     }
 
     @Override
@@ -86,7 +78,7 @@ public class WebGameController implements GameController {
     }
 
     @Override
-    public void setMessage(String message) {
+    public void showMessage(String message) {
 
     }
 
@@ -101,11 +93,6 @@ public class WebGameController implements GameController {
     }
 
     @Override
-    public void showMessage() {
-
-    }
-
-    @Override
     public void setNewBoard(Board board) {
 //        System.out.println("setNewBoard");
 //        System.out.println("obstacles: " + board.getObstacles().size());
@@ -114,7 +101,8 @@ public class WebGameController implements GameController {
 
         for (int i = 0; i < playerArray.length; i++) {
             Player player = playerArray[i];
-            match.setYour_number(i);
+            match.setYourNumber(i);
+            player.setYourNumber(i);
             sendToPlayer(player, apiObjectFactory.createApiObject(match));
         }
     }
@@ -158,19 +146,24 @@ public class WebGameController implements GameController {
     }
 
     @Override
-    public void endWithWait(long score) {
+    public void end(HumanWorm worm, boolean victory, boolean expected) {
         System.out.println("endWithWait");
-        JsonObject apiObject = apiObjectFactory.createApiObject(new EndRound(EndRound.EndType.end));
-        sendToAll(apiObject);
+
+        //XXX determine endtype better. Do we really need 3 types?
+        EndRound.EndType endType;
+        if(victory) {
+            endType = EndRound.EndType.won;
+        } else {
+            endType = EndRound.EndType.end;
+        }
 
         for (Player player : playerArray) {
-            initHolder.addPlayer(player);
+            if (player.getYourNumber() == worm.getPlayerNumber()) {
+                JsonObject apiObject = apiObjectFactory.createApiObject(new EndRound(endType, worm.score));
+                sendToAll(apiObject);
+                initHolder.addPlayer(player);
+            }
         }
-    }
-
-    @Override
-    public void updateScore(long score) {
-
     }
 
     private void sendToAll(JsonElement apiObject) {

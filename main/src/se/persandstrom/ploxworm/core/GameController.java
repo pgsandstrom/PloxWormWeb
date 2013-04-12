@@ -1,36 +1,33 @@
 package se.persandstrom.ploxworm.core;
 
+import se.persandstrom.ploxworm.core.worm.HumanWorm;
 import se.persandstrom.ploxworm.core.worm.Worm;
 import se.persandstrom.ploxworm.core.worm.board.Board;
+
+import java.util.List;
 
 public interface GameController {
 
 
-    public float getXacc(Worm player);
+    public float getXacc(HumanWorm worm);
 
-    public float getYacc(Worm player);
+    public float getYacc(HumanWorm worm);
 
-    public void end(long score);
+    public void death(Worm worm, boolean expected);
 
-    public void victory(long score);
+    public void end(HumanWorm worm, boolean victory, boolean expected);
 
-    public void setScoreBoard(String score);
+    public void updateScore(List<Worm> wormList);
 
     public void setTitle(String title);
 
-    public void setMessage(String message);
-
     public void hideTitle();
 
-    public void hideMessage();
+    public void showMessage(String message);
 
-    public void showMessage();
+    public void hideMessage();
 
     public void setNewBoard(Board board);
 
     public void render();
-
-    public void endWithWait(long score);
-
-    public void updateScore(long score);
 }

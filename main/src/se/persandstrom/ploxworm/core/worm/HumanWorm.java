@@ -7,6 +7,8 @@ public class HumanWorm extends Worm {
 
 	protected static final String TAG = "HumanWorm";
 
+    int playerNumber;
+
 	public HumanWorm(Core core, int color, StartPosition startPosition) {
 		super(core, color, startPosition);
 //		if (Constant.DEBUG) Log.d(TAG, "HumanWorm created");
@@ -77,4 +79,11 @@ public class HumanWorm extends Worm {
 		return false;
 	}
 
+    public int getPlayerNumber() {
+        return playerNumber;
+    }
+
+    public void setPlayerNumber(int playerNumber) {
+        this.playerNumber = playerNumber;
+    }
 }

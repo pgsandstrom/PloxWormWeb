@@ -52,6 +52,7 @@ public abstract class Worm {
 	public List<Apple> appleList;
 
 	public boolean isAlive;
+    public long score;
 
 	public Worm(Core core, int color, StartPosition startPosition) {
 
@@ -189,7 +190,7 @@ maxLength = INITIAL_LENGTH;
 
 	private void eat(Apple apple) {
 
-		board.ateApple(apple);
+		board.ateApple(this, apple);
 		apple.eat();
 
 		maxLength += APPLE_LENGTH_INCREASE;

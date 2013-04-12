@@ -19,10 +19,7 @@ public class BoardManager {
         if (level == 0) {
 //            Log.e(TAG, "wtf not level 0 again...");
             level = 1;
-            //XXX
-            //TODO
-            //FIXME
-            //TODO fixa också att level-namn inte visas...
+            //XXX this should not be needed...
         }
 
         Board board;
@@ -52,7 +49,7 @@ public class BoardManager {
                 throw new IllegalArgumentException("wtf level did not exist");
         }
 
-        //TODO someday this must be made much more flexible, to allow like 3 humans vs 1 cpu etc
+        //XXX someday this must be made much more flexible, to allow like 3 humans vs 1 cpu etc
         Worm player1Worm = new HumanWorm(core, 0, board.getStartPositionList().get(0));
         board.addWorm(player1Worm);
         switch (type) {
