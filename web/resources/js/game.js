@@ -3,6 +3,8 @@
 
     $(document).ready(function () {
 
+        var APPLE_RADIUS = 20;
+
         var ws;
 
         var canvas = $("#canvas")[0];
@@ -41,7 +43,8 @@
             if ("WebSocket" in window) {
                 window.ploxworm.log("Opening websocket");
 
-                var webSocketUrl = 'ws://' + window.location.hostname + ':' + getPort() + '/chat';
+
+                var webSocketUrl = getWsUrl();
                 window.ploxworm.log("webSocketUrl: " + webSocketUrl);
                 ws = new WebSocket(webSocketUrl);
                 ws.onopen = function () {
@@ -55,6 +58,8 @@
 //                    console.log("msgJson.type: " + msgJson.type);
                     if (msgJson.type === 'frame') {
                         render(msgJson.data);
+                    } else if (msgJson.type === 'scoreboard') {
+                        updateScoreboard(msgJson.data);
                     } else if (msgJson.type === 'match') {
                         //currently this is our "game started" signal
                         saveMatchData(msgJson.data);
@@ -96,6 +101,12 @@
             ws.send(JSON.stringify(matchRequest));
         }
 
+        function updateScoreboard(jsonData) {
+            $.each(jsonData, function (index, value) {
+                //TODO
+            });
+        }
+
         function saveMatchData(jsonData) {
 //            window.ploxworm.log('saveMatchData your_number: ' + jsonData.your_number);
             match = jsonData;
@@ -112,6 +123,11 @@
         }
 
         function renderFrame(jsonData) {
+            renderWorms(jsonData);
+            renderApples(jsonData);
+        }
+
+        function renderWorms(jsonData) {
             try {
                 var worms = jsonData.worms;
                 if (worms) {
@@ -137,9 +153,31 @@
                         });
                         context.stroke();
                     });
+                } else {
+                    console.log("no worms");
                 }
             } catch (e) {
-                window.ploxworm.log("error in renderFrame: " + e.stack);
+                window.ploxworm.log("error in renderWorms: " + e.stack);
+            }
+        }
+
+        function renderApples(jsonData) {
+            try {
+                var apples = jsonData.apples;
+                if (apples) {
+                    context.beginPath();
+                    $.each(apples, function (appleIndex, value) {
+                        context.arc(this.x, this.y, APPLE_RADIUS, 0, 2 * Math.PI, false);
+                    });
+                    //TODO respect gold apple
+                    context.fillStyle = 'red';
+                    context.fill();
+                } else {
+                    console.log("no apples");
+                }
+
+            } catch (e) {
+                window.ploxworm.log("error in renderApples: " + e.stack);
             }
         }
 
@@ -224,10 +262,21 @@
             } else if (typeof location.port === "undefined") {
                 window.ploxworm.log("Port was undefined! Going with 8080!");
                 return 8080;
+            } else if (location.port === "") {
+                window.ploxworm.log("Port was \"\"! Going with 8080!");
+                return 8080;
             } else {
                 window.ploxworm.log("FUCK! No port found! Going with 8080!");
-                window.ploxworm.log("we found this lame port: \"" + location.port + "\"");
                 return 8080;
+            }
+        }
+
+        function getWsUrl() {
+            // ugly hax to get around that I failed to forward websockets through apache2
+            if (window.location.hostname === "ploxworm.com") {
+                return 'ws://' + window.location.hostname + ':' + getPort() + '/PloxWormWeb/chat';
+            } else {
+                return 'ws://' + window.location.hostname + ':' + getPort() + '/chat';
             }
         }
 

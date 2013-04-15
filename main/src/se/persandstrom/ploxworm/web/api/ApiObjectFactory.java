@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import se.persandstrom.ploxworm.web.api.objects.EndRound;
 import se.persandstrom.ploxworm.web.api.objects.Match;
 import se.persandstrom.ploxworm.web.api.objects.MatchRequest;
+import se.persandstrom.ploxworm.web.api.objects.ScoreBoard;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
@@ -67,6 +68,13 @@ public class ApiObjectFactory {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(TYPE, EndRound.TYPE);
         jsonObject.add(DATA, gson.toJsonTree(endRound));
+        return jsonObject;
+    }
+
+    public JsonObject createApiObject(ScoreBoard scoreBoard) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty(TYPE, ScoreBoard.TYPE);
+        jsonObject.add(DATA, gson.toJsonTree(scoreBoard));
         return jsonObject;
     }
 }

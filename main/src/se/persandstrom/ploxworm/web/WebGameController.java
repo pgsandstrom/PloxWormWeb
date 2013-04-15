@@ -8,12 +8,17 @@ import se.persandstrom.ploxworm.core.GameController;
 import se.persandstrom.ploxworm.core.Line;
 import se.persandstrom.ploxworm.core.worm.HumanWorm;
 import se.persandstrom.ploxworm.core.worm.Worm;
+import se.persandstrom.ploxworm.core.worm.board.Apple;
 import se.persandstrom.ploxworm.core.worm.board.Board;
 import se.persandstrom.ploxworm.web.api.ApiObjectFactory;
 import se.persandstrom.ploxworm.web.api.objects.EndRound;
 import se.persandstrom.ploxworm.web.api.objects.Match;
+import se.persandstrom.ploxworm.web.api.objects.ScoreBoard;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class WebGameController implements GameController {
 
@@ -24,6 +29,9 @@ public class WebGameController implements GameController {
     private Core core;
     private final Player[] playerArray;
     private final float[][] playerAcc;
+
+    private final Map<Player, Worm> playerToWorm = new HashMap<Player, Worm>();
+    private final Map<Worm, Player> wormToPlayer = new HashMap<Worm, Player>();
 
     public WebGameController(InitHolder initHolder, Player player) {
         playerArray = new Player[]{player};
@@ -69,7 +77,14 @@ public class WebGameController implements GameController {
 
     @Override
     public void updateScore(List<Worm> wormList) {
-        System.out.println("updateScore: " + wormList);
+        ScoreBoard scoreBoard = new ScoreBoard();
+        for(Worm worm:wormList) {
+            //TODO add real name
+            scoreBoard.addScore(scoreBoard.new Score("Bengt", worm.score));
+        }
+
+        JsonObject apiObject = apiObjectFactory.createApiObject(scoreBoard);
+        sendToAll(apiObject);
     }
 
     @Override
@@ -94,15 +109,24 @@ public class WebGameController implements GameController {
 
     @Override
     public void setNewBoard(Board board) {
-//        System.out.println("setNewBoard");
-//        System.out.println("obstacles: " + board.getObstacles().size());
+        /**
+         * Sets up all connections Player to Worm and sends the board to the players
+         */
 
         Match match = new Match(board.getXSize(), board.getYSize(), board.getObstacles());
 
+        List<HumanWorm> humanWormList = board.getHumanWormList();
+
         for (int i = 0; i < playerArray.length; i++) {
             Player player = playerArray[i];
+            HumanWorm humanWorm = humanWormList.get(i);
             match.setYourNumber(i);
             player.setYourNumber(i);
+            humanWorm.setPlayerNumber(i);
+
+            wormToPlayer.put(humanWorm, player);
+            playerToWorm.put(player, humanWorm);
+
             sendToPlayer(player, apiObjectFactory.createApiObject(match));
         }
     }
@@ -141,6 +165,24 @@ public class WebGameController implements GameController {
             }
         }
 
+        //XXX an optimization could be to send apples only when they change
+        //XXX well, the same thing could be true for worms...
+
+        JsonArray appleArray = new JsonArray();
+        data.add("apples", appleArray);
+        List<Apple> appleList = core.getAppleList();
+        for(Apple apple: appleList) {
+            JsonObject appleObject = new JsonObject();
+            if(apple.isGold) {
+                appleObject.addProperty("type", "gold");
+            } else {
+                appleObject.addProperty("type", "red");
+            }
+            appleObject.addProperty("x", apple.positionX);
+            appleObject.addProperty("y", apple.positionY);
+            appleArray.add(appleObject);
+        }
+
         JsonObject apiObject = apiObjectFactory.createApiObject(ApiObjectFactory.TYPE_FRAME, data);
         sendToAll(apiObject);
     }
@@ -151,7 +193,7 @@ public class WebGameController implements GameController {
 
         //XXX determine endtype better. Do we really need 3 types?
         EndRound.EndType endType;
-        if(victory) {
+        if (victory) {
             endType = EndRound.EndType.won;
         } else {
             endType = EndRound.EndType.end;

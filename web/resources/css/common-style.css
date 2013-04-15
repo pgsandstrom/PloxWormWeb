@@ -10,10 +10,6 @@ body {
     width: 960px;
 }
 
-#content {
-    background: #FFFFFF;
-}
-
 .clear {
     clear: both;
 }
@@ -22,9 +18,3 @@ body {
     display: inline-block;
 }
 
-#canvas {
-    /* size must be in html or else shit happens */
-    /*width: 600px;*/
-    /*height: 600px;*/
-    border:1px dotted;
-}

@@ -3,10 +3,7 @@ package se.persandstrom.ploxworm.core;
 import se.persandstrom.ploxworm.core.worm.HumanWorm;
 import se.persandstrom.ploxworm.core.worm.Worm;
 import se.persandstrom.ploxworm.core.worm.ai.StupidWorm;
-import se.persandstrom.ploxworm.core.worm.board.Board;
-import se.persandstrom.ploxworm.core.worm.board.BoardManager;
-import se.persandstrom.ploxworm.core.worm.board.BoardType;
-import se.persandstrom.ploxworm.core.worm.board.StartPosition;
+import se.persandstrom.ploxworm.core.worm.board.*;
 
 import java.util.List;
 
@@ -51,19 +48,12 @@ public class Core {
         this.board = board;
     }
 
-    /**
-     * Sets the score for all worms
-     *
-     * @param score
-     */
-    public void setScore(long score) {
-        for (Worm worm : wormList) {
-            worm.score = score;
-        }
-    }
-
     public List<Worm> getWormList() {
         return wormList;
+    }
+
+    public List<Apple> getAppleList() {
+        return board.getApples();
     }
 
     public void startGame(int level, long score, BoardType boardType) {
@@ -75,8 +65,6 @@ public class Core {
         this.board = board;
 
         startGame();
-
-        setScore(score);
     }
 
     public void startGame() {
@@ -125,40 +113,42 @@ public class Core {
     /**
      * This can be called even if the worm disconnects, closes the app or whatever
      *
-     * @param worm
+     * @param deadWorm
      * @param expected if the dead worm expected the game to end, i.e. terminated the session themselves somehow
      */
-    public void death(Worm worm, boolean expected) {
-        gameController.death(worm, expected);
+    public void death(Worm deadWorm, boolean expected) {
+        gameController.death(deadWorm, expected);
 
-        if (worm.isAi()) {
+        if (deadWorm.isAi()) {
             aliveAiCount--;
         } else {
             aliveHumanCount--;
         }
 
-        worm.isAlive = false;
+        deadWorm.isAlive = false;
 
         boolean endGame = false;
 
-        if ((!worm.isAi() && aliveHumanCount == 1)) {
+        if ((!deadWorm.isAi() && aliveHumanCount == 1)) {
             //human died, only one human left
             endGame = true;
-        } else if ((!worm.isAi() && aliveHumanCount == 0)) {
+        } else if ((!deadWorm.isAi() && aliveHumanCount == 0)) {
             //human died, no humans left
             endGame = true;
-        } else if (worm.isAi() && aliveAiCount == 0 && aliveHumanCount == 1) {
+        } else if (deadWorm.isAi() && aliveAiCount == 0 && aliveHumanCount == 1) {
             //ai died, a human is all that is left
             endGame = true;
         }
 
-        //TODO do appropriate stuff, like ending game, if needed
         if (endGame) {
-            stop(); //FIXME TODO PLOX DO!
+            stop();
         }
-//        gameController.end(score, expected);
 
-
+        for (Worm worm : wormList) {
+            if (!worm.isAi()) {
+                gameController.end((HumanWorm) worm, worm.isAlive, false);
+            }
+        }
     }
 
     public void victory(Worm victoryWorm) {
@@ -323,7 +313,6 @@ public class Core {
          * set the variables that has been specified to the core
          */
         private void setupCore() {
-            core.setScore(score);
             core.eternalGame = eternalGame;
             if (eternalGame) {
                 makePlayersToAi();

@@ -31,7 +31,8 @@ public class Board {
     private final int xSize;
     private final int ySize;
 
-    private List<Worm> wormList;
+    private final List<Worm> wormList;
+    private final List<HumanWorm> humanWormList;
 
     public Board(Core core, String title, ArrayList<Obstacle> obstacleList, ArrayList<Apple> appleList, int xSize,
                  int ySize, int appleEatGoal, int appleVisibleAtOnce, List<StartPosition> startPositionList) {
@@ -44,6 +45,7 @@ public class Board {
         this.appleEatGoal = appleEatGoal;
         this.startPositionList = startPositionList;
         this.wormList = new ArrayList<Worm>();
+        humanWormList = new ArrayList<HumanWorm>();
 
         hasPlacedGoldApple = false;
         random = new Random();
@@ -60,10 +62,17 @@ public class Board {
 
     public void addWorm(Worm worm) {
         wormList.add(worm);
+        if (worm instanceof HumanWorm) {
+            humanWormList.add((HumanWorm) worm);
+        }
     }
 
     public List<Worm> getWormList() {
         return wormList;
+    }
+
+    public List<HumanWorm> getHumanWormList() {
+        return humanWormList;
     }
 
     public List<Obstacle> getObstacles() {
