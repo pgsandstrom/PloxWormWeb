@@ -1,11 +1,16 @@
+body {
+    position: relative;
+}
+
 #content {
     background: #FFFFFF;
+    position: relative;
 }
 
 #canvas {
     /* size must be in html or else shit happens */
-    /*width: 600px;*/
-    /*height: 600px;*/
+    /*width: 800px;*/
+    /*height: 800px;*/
     border: 1px dotted;
 }
 
@@ -17,4 +22,30 @@
     margin: 20px;
     background: #FFFFFF;
     float: left;
+}
+
+/*TODO make messages look not fucked up*/
+/*TODO also make it not steal focus...*/
+
+#messages {
+    width: 800px;
+    top: 150px;
+    position: absolute;
+    text-align: center;
+    margin: auto;
+}
+
+#title {
+    font-size: 400%;
+    background-color: rgba(200, 200, 200, 0.2);
+    color: #FF0000;
+    display: none;
+}
+
+#message {
+    margin: 0;
+    font-size: 200%;
+    background-color: rgba(200, 200, 200, 0.2);
+    color: #880000;
+    display: none;
 }

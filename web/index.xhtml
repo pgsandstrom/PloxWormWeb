@@ -27,14 +27,19 @@
         <!--<ui:include src="/element/newest_players.xhtml"/>-->
         <!--<ui:include src="/element/newest_games.xhtml"/>-->
 
-        <div class="clear"/>
         v0.04: #{test.test}
 
         <canvas width="800" height="800" id="canvas"/>
+        <div id="messages">
+            <p id="title">TITLE</p>
+            <p id="message">Message</p>
+        </div>
 
         <div id="controller">
-            <p>
-
+            <div>
+                <div><label for="player_name">Name:</label><textarea id="player_name" rows="1" cols=""/></div>
+                <div><label for="winning_message">Winning message:</label>
+                    <textarea id="winning_message" rows="1" cols=""/></div>
                 <select id="game-type">
                     <option value="multi" selected="selected">Multiplayer</option>
                     <option value="single">Singleplayer</option>
@@ -53,17 +58,20 @@
 
                 <button id="start-game">START GAME</button>
                 <button id="stop-game">STOP GAME</button>
-            </p>
+            </div>
 
             <textarea id="log" rows="4" cols="50" readonly="readonly"></textarea>
         </div>
         <div id="scoreboard">
             score:
-            <p id="score">
+            <div id="score">
+                <ul id="score-list">
 
-            </p>
+                </ul>
+            </div>
         </div>
     </div>
+
 
     <h:outputScript library="js" name="jquery.min.js"/>
     <h:outputScript library="js" name="log.js"/>

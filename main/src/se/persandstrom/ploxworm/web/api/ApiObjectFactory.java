@@ -3,10 +3,7 @@ package se.persandstrom.ploxworm.web.api;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import se.persandstrom.ploxworm.web.api.objects.EndRound;
-import se.persandstrom.ploxworm.web.api.objects.Match;
-import se.persandstrom.ploxworm.web.api.objects.MatchRequest;
-import se.persandstrom.ploxworm.web.api.objects.ScoreBoard;
+import se.persandstrom.ploxworm.web.api.objects.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
@@ -18,8 +15,11 @@ public class ApiObjectFactory {
     public static final String TYPE = "type";
     public static final String DATA = "data";
 
+    //types that dont have a corresponding class is placed here:
     public static final String TYPE_PUT_IN_QUEUE = "put_in_queue";
     public static final String TYPE_FRAME = "frame";
+    public static final String HIDE_TITLE = "hide_title";
+    public static final String HIDE_MESSAGE = "hide_message";
 
     private final Gson gson = new Gson();
 
@@ -30,7 +30,7 @@ public class ApiObjectFactory {
     public Class getTypeClass(JsonObject jsonObject) {
         String type = jsonObject.get(TYPE).getAsString();
 
-        if(MatchRequest.TYPE.equals(type)) {
+        if (MatchRequest.TYPE.equals(type)) {
             return MatchRequest.class;
         } else {
             //Use this when this is actually used lol...
@@ -57,24 +57,10 @@ public class ApiObjectFactory {
         return jsonObject;
     }
 
-    public JsonObject createApiObject(Match match) {
+    public JsonObject createApiObject(AbstractApiObject apiObject) {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty(TYPE, Match.TYPE);
-        jsonObject.add(DATA, gson.toJsonTree(match));
-        return jsonObject;
-    }
-
-    public JsonObject createApiObject(EndRound endRound) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty(TYPE, EndRound.TYPE);
-        jsonObject.add(DATA, gson.toJsonTree(endRound));
-        return jsonObject;
-    }
-
-    public JsonObject createApiObject(ScoreBoard scoreBoard) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty(TYPE, ScoreBoard.TYPE);
-        jsonObject.add(DATA, gson.toJsonTree(scoreBoard));
+        jsonObject.addProperty(TYPE, apiObject.getType());
+        jsonObject.add(DATA, gson.toJsonTree(apiObject));
         return jsonObject;
     }
 }

@@ -125,6 +125,11 @@ public abstract class Worm {
 
 	public abstract boolean isAi();
 
+    /**
+     *
+     * @param newLine
+     * @return an apple if it was eaten, or null
+     */
 	protected Apple checkAppleEating(Line newLine) {
 		//compare to fruits:
 		for (Apple apple : appleList) {

@@ -1,15 +1,12 @@
 package se.persandstrom.ploxworm.web.api.objects;
 
 
-import se.persandstrom.ploxworm.core.worm.board.Obstacle;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class ScoreBoard {
+public class ScoreBoard implements AbstractApiObject {
 
     public static final String TYPE = "scoreboard";
-
 
     final List<Score> scores;
 
@@ -21,12 +18,17 @@ public class ScoreBoard {
         scores.add(score);
     }
 
+    @Override
+    public String getType() {
+        return TYPE;
+    }
+
     public class Score {
-        String name;
+        String player_name;
         long score;
 
         public Score(String name, long score) {
-            this.name = name;
+            this.player_name = name;
             this.score = score;
         }
     }

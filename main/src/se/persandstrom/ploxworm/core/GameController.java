@@ -15,11 +15,11 @@ public interface GameController {
 
     public void death(Worm worm, boolean expected);
 
-    public void end(HumanWorm worm, boolean victory, boolean expected);
+    public void end(HumanWorm worm, boolean victory, boolean expected, int winnerNumber);
 
     public void updateScore(List<Worm> wormList);
 
-    public void setTitle(String title);
+    public void showTitle(String title);
 
     public void hideTitle();
 

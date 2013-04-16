@@ -11,12 +11,9 @@ import se.persandstrom.ploxworm.core.worm.Worm;
 import se.persandstrom.ploxworm.core.worm.board.Apple;
 import se.persandstrom.ploxworm.core.worm.board.Board;
 import se.persandstrom.ploxworm.web.api.ApiObjectFactory;
-import se.persandstrom.ploxworm.web.api.objects.EndRound;
-import se.persandstrom.ploxworm.web.api.objects.Match;
-import se.persandstrom.ploxworm.web.api.objects.ScoreBoard;
+import se.persandstrom.ploxworm.web.api.objects.*;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +27,7 @@ public class WebGameController implements GameController {
     private final Player[] playerArray;
     private final float[][] playerAcc;
 
+    private final Map<Integer, Player> playerNumberToPlayer = new HashMap<Integer, Player>();
     private final Map<Player, Worm> playerToWorm = new HashMap<Player, Worm>();
     private final Map<Worm, Player> wormToPlayer = new HashMap<Worm, Player>();
 
@@ -67,7 +65,16 @@ public class WebGameController implements GameController {
 
     @Override
     public void death(Worm worm, boolean expected) {
-        //XXX NOT IMPLEMENTED
+        Death death;
+        if (!worm.isAi()) {
+            Player player = wormToPlayer.get(worm);
+            death = new Death(player.getPlayerNumber());
+        } else {
+            death = new Death();
+        }
+
+        JsonObject apiObject = apiObjectFactory.createApiObject(death);
+        sendToAll(apiObject);
     }
 
     public void setAcc(int playerNumber, float xAcc, float yAcc) {
@@ -78,9 +85,14 @@ public class WebGameController implements GameController {
     @Override
     public void updateScore(List<Worm> wormList) {
         ScoreBoard scoreBoard = new ScoreBoard();
-        for(Worm worm:wormList) {
-            //TODO add real name
-            scoreBoard.addScore(scoreBoard.new Score("Bengt", worm.score));
+        for (Worm worm : wormList) {
+            String name;
+            if (worm.isAi()) {
+                name = "CPU";
+            } else {
+                name = wormToPlayer.get(worm).getName();
+            }
+            scoreBoard.addScore(scoreBoard.new Score(name, worm.score));
         }
 
         JsonObject apiObject = apiObjectFactory.createApiObject(scoreBoard);
@@ -88,23 +100,29 @@ public class WebGameController implements GameController {
     }
 
     @Override
-    public void setTitle(String title) {
-
+    public void showTitle(String title) {
+        System.out.println("showTitle");
+        JsonObject apiObject = apiObjectFactory.createApiObject(new Title(title));
+        sendToAll(apiObject);
     }
 
     @Override
     public void showMessage(String message) {
-
+        System.out.println("showMessage");
+        JsonObject apiObject = apiObjectFactory.createApiObject(new Message(message));
+        sendToAll(apiObject);
     }
 
     @Override
     public void hideTitle() {
-
+        JsonObject apiObject = apiObjectFactory.createApiObject(ApiObjectFactory.HIDE_TITLE);
+        sendToAll(apiObject);
     }
 
     @Override
     public void hideMessage() {
-
+        JsonObject apiObject = apiObjectFactory.createApiObject(ApiObjectFactory.HIDE_MESSAGE);
+        sendToAll(apiObject);
     }
 
     @Override
@@ -121,11 +139,12 @@ public class WebGameController implements GameController {
             Player player = playerArray[i];
             HumanWorm humanWorm = humanWormList.get(i);
             match.setYourNumber(i);
-            player.setYourNumber(i);
+            player.setPlayerNumber(i);
             humanWorm.setPlayerNumber(i);
 
             wormToPlayer.put(humanWorm, player);
             playerToWorm.put(player, humanWorm);
+            playerNumberToPlayer.put(player.getPlayerNumber(), player);
 
             sendToPlayer(player, apiObjectFactory.createApiObject(match));
         }
@@ -171,9 +190,13 @@ public class WebGameController implements GameController {
         JsonArray appleArray = new JsonArray();
         data.add("apples", appleArray);
         List<Apple> appleList = core.getAppleList();
-        for(Apple apple: appleList) {
+        for (Apple apple : appleList) {
+            if (!apple.exists) {
+                continue;
+            }
+
             JsonObject appleObject = new JsonObject();
-            if(apple.isGold) {
+            if (apple.isGold) {
                 appleObject.addProperty("type", "gold");
             } else {
                 appleObject.addProperty("type", "red");
@@ -188,8 +211,8 @@ public class WebGameController implements GameController {
     }
 
     @Override
-    public void end(HumanWorm worm, boolean victory, boolean expected) {
-        System.out.println("endWithWait");
+    public void end(HumanWorm worm, boolean victory, boolean expected, int winnerNumber) {
+        System.out.println("end: " + worm.getPlayerNumber());
 
         //XXX determine endtype better. Do we really need 3 types?
         EndRound.EndType endType;
@@ -199,13 +222,19 @@ public class WebGameController implements GameController {
             endType = EndRound.EndType.end;
         }
 
-        for (Player player : playerArray) {
-            if (player.getYourNumber() == worm.getPlayerNumber()) {
-                JsonObject apiObject = apiObjectFactory.createApiObject(new EndRound(endType, worm.score));
-                sendToAll(apiObject);
-                initHolder.addPlayer(player);
-            }
+        EndRound endRound;
+        if (winnerNumber != -1) {
+            String winningMessage = playerNumberToPlayer.get(winnerNumber).getWinningMessage();
+            endRound = new EndRound(endType, worm.score, winnerNumber, winningMessage);
+        } else {
+            endRound = new EndRound(endType, worm.score);
         }
+
+        Player player = wormToPlayer.get(worm);
+        JsonObject apiObject = apiObjectFactory.createApiObject(endRound);
+        sendToPlayer(player, apiObject);
+        initHolder.addPlayer(player);
+
     }
 
     private void sendToAll(JsonElement apiObject) {

@@ -8,14 +8,14 @@ import java.io.IOException;
 public class Player {
 
     private final SimpleWebSocket ws;
-
     private boolean connected;
+    private final JsonParser parser;
 
     private PlayerParent parent;
 
-    private final JsonParser parser;
-
-    private int yourNumber;
+    private String name;
+    private String winningMessage;
+    private int playerNumber;
 
     public Player(SimpleWebSocket ws) {
         this.ws = ws;
@@ -61,12 +61,28 @@ public class Player {
         parent.open(this);
     }
 
-    public int getYourNumber() {
-        return yourNumber;
+    public int getPlayerNumber() {
+        return playerNumber;
     }
 
-    public void setYourNumber(int yourNumber) {
-        this.yourNumber = yourNumber;
+    public void setPlayerNumber(int playerNumber) {
+        this.playerNumber = playerNumber;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getWinningMessage() {
+        return winningMessage;
+    }
+
+    public void setWinningMessage(String winningMessage) {
+        this.winningMessage = winningMessage;
     }
 }
 

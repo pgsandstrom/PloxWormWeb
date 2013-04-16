@@ -45,7 +45,7 @@ public class MatchMaker implements Serializable, PlayerParent {
                 startSinglePlayer(player, true, matchRequest.getLevel());
                 break;
             case multi:
-                arrangeMultiPlayer(player, matchRequest.getLevel());
+                arrangeMultiPlayer(player, matchRequest);
                 break;
         }
     }
@@ -71,7 +71,11 @@ public class MatchMaker implements Serializable, PlayerParent {
         game.start();
     }
 
-    private void arrangeMultiPlayer(Player player, int level) {
+    private void arrangeMultiPlayer(Player player, MatchRequest matchRequest) {
+
+        int level = matchRequest.getLevel();
+        player.setName(matchRequest.getPlayerName());
+        player.setWinningMessage(matchRequest.getWinningMessage());
 
         synchronized (this) {
             if (waitingPlayer == null) {

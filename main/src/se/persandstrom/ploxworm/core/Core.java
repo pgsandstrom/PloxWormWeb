@@ -75,7 +75,7 @@ public class Core {
         setWormTypeCounter(wormList);
 
         gameController.setNewBoard(board);
-        gameController.setTitle(board.title);
+        gameController.showTitle(board.title);
 
         new StartCountDownThread().start();
     }
@@ -144,18 +144,39 @@ public class Core {
             stop();
         }
 
+        //we only support ONE winner...
+        Worm winnerWorm = null;
+        for (Worm worm : wormList) {
+            if (worm.isAlive) {
+                winnerWorm = worm;
+                break;
+            }
+        }
+
         for (Worm worm : wormList) {
             if (!worm.isAi()) {
-                gameController.end((HumanWorm) worm, worm.isAlive, false);
+                if (winnerWorm == null) {
+                    gameController.end((HumanWorm) worm, worm.isAlive, false, -1);
+                } else if (winnerWorm instanceof HumanWorm) {
+                    HumanWorm humanWinner = (HumanWorm) winnerWorm;
+                    gameController.end((HumanWorm) worm, worm.isAlive, false, humanWinner.getPlayerNumber());
+                } else {
+                    //computer won:
+                    gameController.end((HumanWorm) worm, worm.isAlive, false, -1);
+                }
             }
         }
     }
 
     public void victory(Worm victoryWorm) {
         for (Worm worm : wormList) {
-            if (worm instanceof HumanWorm) {
-
+            int winnerPlayerId;
+            if (victoryWorm instanceof HumanWorm) {
+                winnerPlayerId = ((HumanWorm) victoryWorm).getPlayerNumber();
+            } else {
+                winnerPlayerId = -1;
             }
+            gameController.end((HumanWorm) worm, worm == victoryWorm, false, winnerPlayerId);
         }
     }
 

@@ -66,8 +66,19 @@
                         gameRunning = true;
                         startSendingPosition();
                     } else if (msgJson.type === 'end_round') {
-                        window.ploxworm.log("Game ended!");
-                        gameRunning = false;
+                        endRound(msgJson);
+                    } else if (msgJson.type === 'death') {
+                        death(msgJson);
+                    } else if (msgJson.type === 'put_in_queue') {
+                        window.ploxworm.log("queue"); //TODO
+                    } else if (msgJson.type === 'show_title') {
+                        showTitle(msgJson.data);
+                    } else if (msgJson.type === 'hide_title') {
+                        hideTitle();
+                    } else if (msgJson.type === 'show_message') {
+                        showMessage(msgJson.data);
+                    } else if (msgJson.type === 'hide_message') {
+                        hideMessage();
                     } else {
                         window.ploxworm.log('unknown data: ' + msgJson);
                         window.ploxworm.log('unknown data 2: ' + msgJson.type);
@@ -98,12 +109,20 @@
             var level = $("#level").val();
             data.game_type = gameType;
             data.level = level;
+            data.player_name = $("#player_name").val();
+            data.winning_message = $("#winning_message").val();
             ws.send(JSON.stringify(matchRequest));
         }
 
         function updateScoreboard(jsonData) {
-            $.each(jsonData, function (index, value) {
-                //TODO
+            var scores = jsonData.scores;
+
+            var scoreList = $("#score-list");
+            scoreList.empty();
+            $.each(scores, function (index, value) {
+                var listItem = $(document.createElement('li'));
+                listItem.text(value.player_name + ":\t" + value.score);
+                scoreList.append(listItem);
             });
         }
 
@@ -165,13 +184,16 @@
             try {
                 var apples = jsonData.apples;
                 if (apples) {
-                    context.beginPath();
                     $.each(apples, function (appleIndex, value) {
+                        context.beginPath();
                         context.arc(this.x, this.y, APPLE_RADIUS, 0, 2 * Math.PI, false);
+                        if (this.type === "red") {
+                            context.fillStyle = 'red';
+                        } else {
+                            context.fillStyle = 'yellow';
+                        }
+                        context.fill();
                     });
-                    //TODO respect gold apple
-                    context.fillStyle = 'red';
-                    context.fill();
                 } else {
                     console.log("no apples");
                 }
@@ -201,6 +223,40 @@
             } catch (e) {
                 window.ploxworm.log("error in renderBord: " + e.stack);
             }
+        }
+
+        function endRound(data) {
+            window.ploxworm.log("Game ended!");
+            gameRunning = false;
+            //TODO show winner message etc
+        }
+
+        function death(data) {
+            window.ploxworm.log("death");
+            //TODO handle better
+        }
+
+        function showTitle(data) {
+            var title = $("#title");
+            title.text(data.message);
+            title.show();
+        }
+
+        function hideTitle() {
+            var title = $("#title");
+            title.hide();
+        }
+
+        function showMessage(data) {
+            window.ploxworm.log("show message: " + data.message);
+            var message = $("#message");
+            message.text(data.message);
+            message.show();
+        }
+
+        function hideMessage() {
+            var message = $("#message");
+            message.hide();
         }
 
         $(window).bind('beforeunload', function () {

@@ -60,7 +60,7 @@ public class BoardManager {
                 board.addWorm(cpuWorm);
                 break;
             case MULTI:
-                Worm player2Worm = new HumanWorm(core, 0, board.getStartPositionList().get(0));
+                Worm player2Worm = new HumanWorm(core, 0, board.getStartPositionList().get(1));
                 board.addWorm(player2Worm);
                 break;
         }
@@ -122,6 +122,7 @@ public class BoardManager {
 
         //startPositions:
         startPositionList.add(new StartPosition(400, 400, 1, 1));
+        startPositionList.add(new StartPosition(200, 500, 1, 1));
 
         return new Board(core, title, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce,
                 startPositionList);

@@ -37,7 +37,7 @@
 		worms: [[{x:1,y:2},{x:1,y:2}]],
 		
 		apples: [
-			type: red
+			type: red/gold
 			x: 4
 			y: 4
 		]
@@ -53,7 +53,7 @@
 	type: scoreboard
 	data {
 		scores[
-			name: "name"
+			player_name: "name"
 			score: 123
 		]
 	}
@@ -76,7 +76,58 @@
 	data : {
 		score: 1
 		type: {won, lost, end}
+		winner: 2
+		winner_message: "suck it"
 	}
+}
+
+-------------------
+-------DEATH-------
+-------------------
+
+{
+	type: death
+	data : {
+		player_number: 1	(optional, might have been a cpu that died)
+	}
+}
+
+------------------------
+-------SHOW TITLE-------
+------------------------
+
+{
+	type: show_title
+	data : {
+		message: "lol"
+	}
+}
+
+------------------------
+-------HIDE TITLE-------
+------------------------
+
+{
+	type: hide_title
+}
+
+--------------------------
+-------SHOW MESSAGE-------
+--------------------------
+
+{
+	type: show_title
+	data : {
+		message: "lol"
+	}
+}
+
+--------------------------
+-------HIDE MESSAGE-------
+--------------------------
+
+{
+	type: hide_message
 }
 
 -----------------------------------------------------
@@ -94,6 +145,8 @@
 	data : {
 		game_type : single / vs_cpu / multi
 		level: 1
+		player_name: "name"
+		winning_message: "ägd!"
 	}
 }
 

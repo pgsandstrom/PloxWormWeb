@@ -5,14 +5,15 @@ import se.persandstrom.ploxworm.core.worm.board.Obstacle;
 
 import java.util.List;
 
-public class Match {
+@SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration"})
+public class Match implements AbstractApiObject{
 
     public static final String TYPE = "match";
 
     int your_number;
 
-    int size_x;
-    int size_y;
+    private final int size_x;
+    private final int size_y;
 
     List<Obstacle> obstacles;
 
@@ -24,5 +25,10 @@ public class Match {
 
     public void setYourNumber(int yourNumber) {
         this.your_number = yourNumber;
+    }
+
+    @Override
+    public String getType() {
+        return TYPE;
     }
 }
