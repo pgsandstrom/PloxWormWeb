@@ -17,6 +17,8 @@ public class Match implements AbstractApiObject{
 
     List<Obstacle> obstacles;
 
+    List<PlayerApiObject> players;
+
     public Match(int size_x, int size_y, List<Obstacle> obstacles) {
         this.size_x = size_x;
         this.size_y = size_y;

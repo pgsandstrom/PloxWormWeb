@@ -70,7 +70,7 @@
                     } else if (msgJson.type === 'death') {
                         death(msgJson);
                     } else if (msgJson.type === 'put_in_queue') {
-                        window.ploxworm.log("queue"); //TODO
+                        putInQueue(msgJson.data);
                     } else if (msgJson.type === 'show_title') {
                         showTitle(msgJson.data);
                     } else if (msgJson.type === 'hide_title') {
@@ -228,11 +228,20 @@
         function endRound(data) {
             window.ploxworm.log("Game ended!");
             gameRunning = false;
-            //TODO show winner message etc
+            if(match.your_number === data.winner) {
+                showTitle("YOU WON!");
+            } else {
+                //TODO get winner from match
+            }
         }
 
         function death(data) {
             window.ploxworm.log("death");
+            //TODO handle better
+        }
+
+        function putInQueue(data) {
+            window.ploxworm.log("putInQueue");
             //TODO handle better
         }
 
