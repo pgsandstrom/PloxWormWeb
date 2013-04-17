@@ -16,7 +16,7 @@ public class SimpleWebSocket extends MessageInbound {
 
     private WsOutbound outbound;
 
-    private Player owner;
+    private HumanPlayer owner;
 
     public SimpleWebSocket() {
     }
@@ -52,7 +52,7 @@ public class SimpleWebSocket extends MessageInbound {
         owner.disconnected();
     }
 
-    public void setOwner(Player owner) {
+    public void setOwner(HumanPlayer owner) {
         this.owner = owner;
     }
 }

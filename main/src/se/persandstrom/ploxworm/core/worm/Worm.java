@@ -54,6 +54,8 @@ public abstract class Worm {
 	public boolean isAlive;
     public long score;
 
+    int playerNumber;
+
 	public Worm(Core core, int color, StartPosition startPosition) {
 
 		this.core = core;
@@ -112,7 +114,8 @@ public abstract class Worm {
 		}
 
 		if (isLineColliding(newLine, lineListSize)) {
-			return MOVE_DEATH;
+            System.out.println("omg that was real^");
+            return MOVE_DEATH;
 		}
 
 		Apple eatApple = checkAppleEating(newLine);
@@ -164,7 +167,8 @@ maxLength = INITIAL_LENGTH;
 		for (int i = 0; i < iterationStop; i++) {
 			Line line = lineList.get(i);
 			if (isIntersection(newLine, line)) {
-				//				if (Constant.DEBUG) Log.d(TAG, "BAM!");
+                System.out.println("bam to self!");
+                //				if (Constant.DEBUG) Log.d(TAG, "BAM!");
 				return true;
 			}
 		}
@@ -176,6 +180,7 @@ maxLength = INITIAL_LENGTH;
 				List<Line> otherWormLineList = worm.getLineList();
 				for (Line line : otherWormLineList) {
 					if (isIntersection(newLine, line)) {
+                        System.out.println("bam to other!");
 						//						if (Constant.DEBUG) Log.d(TAG, "BAM ON WORM!");
 						return true;
 					}
@@ -280,4 +285,12 @@ maxLength = INITIAL_LENGTH;
 		double lineY = x * line.a + line.c;
 		return y > lineY;
 	}
+
+    public int getPlayerNumber() {
+        return playerNumber;
+    }
+
+    public void setPlayerNumber(int playerNumber) {
+        this.playerNumber = playerNumber;
+    }
 }

@@ -25,13 +25,13 @@ public class InitHolder implements PlayerParent {
 
     Set<Player> playerSet = new HashSet<Player>();
 
-    public void addPlayer(Player player) {
+    public void addPlayer(HumanPlayer player) {
         player.setParent(this);
         playerSet.add(player);
     }
 
     @Override
-    public void received(Player player, JsonObject message) {
+    public void received(HumanPlayer player, JsonObject message) {
         Class typeClass = apiObjectFactory.getTypeClass(message);
 
         if (typeClass == MatchRequest.class) {
@@ -46,13 +46,13 @@ public class InitHolder implements PlayerParent {
     }
 
     @Override
-    public void remove(Player player) {
+    public void remove(HumanPlayer player) {
         System.out.println("Player removed from InitHolder");
         playerSet.remove(player);
     }
 
     @Override
-    public void open(Player player) {
+    public void open(HumanPlayer player) {
         //do nothing until they request a game
 //        playerSet.remove(player);
 //        matchMaker.addPlayer(player);

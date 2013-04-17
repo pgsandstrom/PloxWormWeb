@@ -169,15 +169,22 @@ public class Core {
     }
 
     public void victory(Worm victoryWorm) {
+
+        int winnerPlayerId;
+        if (victoryWorm instanceof HumanWorm) {
+            winnerPlayerId = ((HumanWorm) victoryWorm).getPlayerNumber();
+        } else {
+            winnerPlayerId = -1;
+        }
+
         for (Worm worm : wormList) {
-            int winnerPlayerId;
-            if (victoryWorm instanceof HumanWorm) {
-                winnerPlayerId = ((HumanWorm) victoryWorm).getPlayerNumber();
-            } else {
-                winnerPlayerId = -1;
+            if (!(worm instanceof HumanWorm)) {
+                continue;
             }
             gameController.end((HumanWorm) worm, worm == victoryWorm, false, winnerPlayerId);
         }
+
+        stop();
     }
 
 

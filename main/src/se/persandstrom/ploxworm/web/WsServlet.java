@@ -21,7 +21,7 @@ public class WsServlet extends org.apache.catalina.websocket.WebSocketServlet {
     protected StreamInbound createWebSocketInbound(String s, HttpServletRequest httpServletRequest) {
         System.out.println("createWebSocketInbound");
         SimpleWebSocket webSocket = new SimpleWebSocket();
-        Player player = new Player(webSocket);
+        HumanPlayer player = new HumanPlayer(webSocket);
         initHolder.addPlayer(player);
         return webSocket;
     }

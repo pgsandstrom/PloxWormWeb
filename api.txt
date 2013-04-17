@@ -22,7 +22,11 @@
 						radius
 					}
 		]
-		players: ???
+		players: {
+			name: "name"
+			winning_message: "lol
+			player_number: 1
+		}
 	}
 }
 
@@ -88,7 +92,7 @@
 {
 	type: death
 	data : {
-		player_number: 1	(optional, might have been a cpu that died)
+		player_number: 1
 	}
 }
 

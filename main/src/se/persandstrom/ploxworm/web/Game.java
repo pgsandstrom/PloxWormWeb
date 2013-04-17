@@ -16,17 +16,17 @@ public class Game implements PlayerParent {
 
     private final ApiObjectFactory apiObjectFactory = new ApiObjectFactory();
 
-    private final List<Player> playerList;
+    private final List<HumanPlayer> playerList;
     private final WebGameController gameController;
     private final Core core;
 
 
-    public Game(List<Player> playerList, WebGameController gameController, Core core) {
+    public Game(List<HumanPlayer> playerList, WebGameController gameController, Core core) {
         this.playerList = playerList;
         this.gameController = gameController;
         this.core = core;
 
-        for (Player player : playerList) {
+        for (HumanPlayer player : playerList) {
             player.setParent(this);
         }
     }
@@ -36,7 +36,7 @@ public class Game implements PlayerParent {
     }
 
     @Override
-    public void received(Player player, JsonObject message) {
+    public void received(HumanPlayer player, JsonObject message) {
 
         int playerNumber = playerList.indexOf(player);
 
@@ -55,13 +55,13 @@ public class Game implements PlayerParent {
     }
 
     @Override
-    public void remove(Player player) {
+    public void remove(HumanPlayer player) {
         //TODO don't just stop
         core.stop();
     }
 
     @Override
-    public void open(Player player) {
+    public void open(HumanPlayer player) {
         throw new UnsupportedOperationException("you should already be open you doofus!");
     }
 }

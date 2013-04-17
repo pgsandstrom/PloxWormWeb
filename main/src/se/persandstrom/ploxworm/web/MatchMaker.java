@@ -26,10 +26,11 @@ public class MatchMaker implements Serializable, PlayerParent {
 
     private final Random random = new Random();
 
-    Player waitingPlayer;
+    HumanPlayer waitingPlayer;
     int waitingPlayerLevel;
 
-    public void addPlayer(Player player, MatchRequest matchRequest) {
+    public void addPlayer(HumanPlayer player, MatchRequest matchRequest) {
+        player.setName(matchRequest.getPlayerName());
         player.setParent(this);
 
         if (!player.isConnected()) {
@@ -50,7 +51,7 @@ public class MatchMaker implements Serializable, PlayerParent {
         }
     }
 
-    private void startSinglePlayer(Player player, boolean withCpu, int level) {
+    private void startSinglePlayer(HumanPlayer player, boolean withCpu, int level) {
         System.out.println("startSinglePlayer: " + level);
         WebGameController gameController = new WebGameController(initHolder, player);
         Core.Builder builder = new Core.Builder(gameController);
@@ -60,7 +61,7 @@ public class MatchMaker implements Serializable, PlayerParent {
 //        builder.setMakePlayersToAi(false);
         builder.setScore(0);
 
-        List<Player> playerList = new ArrayList<Player>();
+        List<HumanPlayer> playerList = new ArrayList<HumanPlayer>();
         playerList.add(player);
 
         Core core = builder.build();
@@ -71,7 +72,7 @@ public class MatchMaker implements Serializable, PlayerParent {
         game.start();
     }
 
-    private void arrangeMultiPlayer(Player player, MatchRequest matchRequest) {
+    private void arrangeMultiPlayer(HumanPlayer player, MatchRequest matchRequest) {
 
         int level = matchRequest.getLevel();
         player.setName(matchRequest.getPlayerName());
@@ -86,11 +87,11 @@ public class MatchMaker implements Serializable, PlayerParent {
                 player.send(putInQueueObject.toString());
             } else {
                 //start game!
-                ArrayList<Player> playerList = new ArrayList<Player>();
+                ArrayList<HumanPlayer> playerList = new ArrayList<HumanPlayer>();
                 playerList.add(waitingPlayer);
                 playerList.add(player);
 
-                WebGameController gameController = new WebGameController(initHolder, new Player[]{waitingPlayer,
+                WebGameController gameController = new WebGameController(initHolder, new HumanPlayer[]{waitingPlayer,
                         player});
                 Core.Builder builder = new Core.Builder(gameController);
                 builder.setLevel(random.nextInt(2) == 0 ? level : waitingPlayerLevel);  //XXX should it be 2? TEST!
@@ -107,17 +108,17 @@ public class MatchMaker implements Serializable, PlayerParent {
     }
 
     @Override
-    public void received(Player player, JsonObject message) {
+    public void received(HumanPlayer player, JsonObject message) {
         //NOT IMPLEMENTED
     }
 
     @Override
-    public void remove(Player player) {
+    public void remove(HumanPlayer player) {
         //NOT IMPLEMENTED
     }
 
     @Override
-    public void open(Player player) {
+    public void open(HumanPlayer player) {
         throw new UnsupportedOperationException("you should already be open you doofus!");
     }
 }

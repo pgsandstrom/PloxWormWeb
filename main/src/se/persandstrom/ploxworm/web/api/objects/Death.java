@@ -8,11 +8,7 @@ public class Death implements AbstractApiObject {
 
     public static final String TYPE = "death";
 
-    private final Integer player_number;
-
-    public Death() {
-        player_number = null;
-    }
+    private final int player_number;
 
     public Death(int playerNumber) {
         this.player_number = playerNumber;

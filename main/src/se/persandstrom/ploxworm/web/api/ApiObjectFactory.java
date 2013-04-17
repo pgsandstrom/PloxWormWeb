@@ -1,6 +1,7 @@
 package se.persandstrom.ploxworm.web.api;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import se.persandstrom.ploxworm.web.api.objects.*;
@@ -21,7 +22,16 @@ public class ApiObjectFactory {
     public static final String HIDE_TITLE = "hide_title";
     public static final String HIDE_MESSAGE = "hide_message";
 
-    private final Gson gson = new Gson();
+    private final Gson gson;
+    private final Gson gsonExcludeNonExposed;
+
+    public ApiObjectFactory() {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.excludeFieldsWithoutExposeAnnotation();
+        gsonExcludeNonExposed = gsonBuilder.create();
+
+        gson = new Gson();
+    }
 
     public String getType(JsonObject jsonObject) {
         return jsonObject.get(TYPE).getAsString();

@@ -10,6 +10,7 @@
         var canvas = $("#canvas")[0];
         var context = canvas.getContext('2d');
         var match;
+        var inQueue = false;
 
         var headX;
         var headY;
@@ -62,13 +63,11 @@
                         updateScoreboard(msgJson.data);
                     } else if (msgJson.type === 'match') {
                         //currently this is our "game started" signal
-                        saveMatchData(msgJson.data);
-                        gameRunning = true;
-                        startSendingPosition();
+                        startGame(msgJson.data);
                     } else if (msgJson.type === 'end_round') {
-                        endRound(msgJson);
+                        endRound(msgJson.data);
                     } else if (msgJson.type === 'death') {
-                        death(msgJson);
+                        death(msgJson.data);
                     } else if (msgJson.type === 'put_in_queue') {
                         putInQueue(msgJson.data);
                     } else if (msgJson.type === 'show_title') {
@@ -126,6 +125,16 @@
             });
         }
 
+        function startGame(data) {
+            saveMatchData(data);
+            gameRunning = true;
+            startSendingPosition();
+            if (inQueue) {
+                playSound("3beeps");
+                inQueue = false;
+            }
+        }
+
         function saveMatchData(jsonData) {
 //            window.ploxworm.log('saveMatchData your_number: ' + jsonData.your_number);
             match = jsonData;
@@ -135,7 +144,7 @@
         function render(jsonData) {
 //            console.log("render: " + jsonData);
 
-            //TODO draw level on another canvas or something?
+            //XXX draw level on another canvas or something?
             context.clearRect(0, 0, 800, 800);
             renderFrame(jsonData);
             renderBoard();
@@ -228,21 +237,28 @@
         function endRound(data) {
             window.ploxworm.log("Game ended!");
             gameRunning = false;
-            if(match.your_number === data.winner) {
+            if (match.your_number === data.winner) {
                 showTitle("YOU WON!");
             } else {
-                //TODO get winner from match
+                //XXX get winner from match
+                showTitle("GAME OVER MAN!");
             }
         }
 
         function death(data) {
             window.ploxworm.log("death");
-            //TODO handle better
+            if (data.player_number === match.your_number) {
+                showMessageString("You died!");
+            } else {
+                //XXX find his name
+                window.ploxworm.log("Some loser died");
+            }
         }
 
         function putInQueue(data) {
             window.ploxworm.log("putInQueue");
-            //TODO handle better
+            inQueue = true;
+            showMessageString("Waiting for opponents...");
         }
 
         function showTitle(data) {
@@ -257,15 +273,24 @@
         }
 
         function showMessage(data) {
-            window.ploxworm.log("show message: " + data.message);
+            showMessageString(data.message);
+        }
+
+        function showMessageString(messageString) {
             var message = $("#message");
-            message.text(data.message);
+            window.ploxworm.log("show message: " + messageString);
+            message.text(messageString);
             message.show();
         }
 
         function hideMessage() {
             var message = $("#message");
             message.hide();
+        }
+
+        function playSound(soundObjId) {
+            var sound = document.getElementById(soundObjId);
+            sound.Play();
         }
 
         $(window).bind('beforeunload', function () {
@@ -291,7 +316,7 @@
         });
 
         function startSendingPosition() {
-            setTimeout(updateWormDirection, 500);  //TODO time it takes for game to start, actually, or something lol
+            setTimeout(updateWormDirection, 500);  //XXX time it takes for game to start, actually, or something lol
 
             function updateWormDirection() {
 //                console.log('updateWormDirection');
@@ -304,7 +329,7 @@
                     directionMessage.data = {};
                     directionMessage.data.x = x;
                     directionMessage.data.y = y;
-                    console.log('sending direction: ' + x + ', ' + y);
+//                    console.log('sending direction: ' + x + ', ' + y);
                     ws.send(JSON.stringify(directionMessage));
                 } else {
                     console.log('failed to get direction: ' + mouseX + ', ' + headX);
