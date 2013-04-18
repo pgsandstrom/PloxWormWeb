@@ -80,7 +80,7 @@
 	data : {
 		score: 1
 		type: {won, lost, end}
-		winner: 2
+		winner_number: 2
 		winner_message: "suck it"
 	}
 }

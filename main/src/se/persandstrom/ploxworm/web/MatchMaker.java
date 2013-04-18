@@ -114,7 +114,9 @@ public class MatchMaker implements Serializable, PlayerParent {
 
     @Override
     public void remove(HumanPlayer player) {
-        //NOT IMPLEMENTED
+        if(player == waitingPlayer) {
+            waitingPlayer = null;
+        }
     }
 
     @Override

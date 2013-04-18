@@ -227,7 +227,7 @@ public class WebGameController implements GameController {
 
     @Override
     public void end(HumanWorm worm, boolean victory, boolean expected, int winnerNumber) {
-        System.out.println("end: " + worm.getPlayerNumber());
+        System.out.println("end winnerNumber: " + winnerNumber);
 
         //XXX determine endtype better. Do we really need 3 types?
         EndRound.EndType endType;
@@ -242,6 +242,7 @@ public class WebGameController implements GameController {
             String winningMessage = playerNumberToPlayer.get(winnerNumber).getWinningMessage();
             endRound = new EndRound(endType, worm.score, winnerNumber, winningMessage);
         } else {
+            //if singleplayer then no winner exists:
             endRound = new EndRound(endType, worm.score);
         }
 
@@ -249,7 +250,6 @@ public class WebGameController implements GameController {
         JsonObject apiObject = apiObjectFactory.createApiObject(endRound);
         sendToPlayer(player, apiObject);
         initHolder.addPlayer(player);
-
     }
 
     private void sendToAll(JsonElement apiObject) {

@@ -5,11 +5,15 @@
 
         var APPLE_RADIUS = 20;
 
+        //XXX more awesome colors
+        var WORM_COLORS = ['Chartreuse', 'Darkorange', 'blue'];
+
         var ws;
 
         var canvas = $("#canvas")[0];
         var context = canvas.getContext('2d');
         var match;
+        var lastFrame;
         var inQueue = false;
 
         var headX;
@@ -138,110 +142,150 @@
         function saveMatchData(jsonData) {
 //            window.ploxworm.log('saveMatchData your_number: ' + jsonData.your_number);
             match = jsonData;
-            renderBoard();
+            render(null);
         }
 
         function render(jsonData) {
 //            console.log("render: " + jsonData);
 
-            //XXX draw level on another canvas or something?
-            context.clearRect(0, 0, 800, 800);
-            renderFrame(jsonData);
-            renderBoard();
-        }
+            if (match) {
+                // we use scaleX not only to scale where the mouse is relative to the worm head, but also to scale the graphics.
+                // Why not use context.scale()? Because it makes lines look like crap.
+                var scaleX = canvas.width / match.size_x;
+                var scaleY = canvas.height / match.size_y;
 
-        function renderFrame(jsonData) {
-            renderWorms(jsonData);
-            renderApples(jsonData);
-        }
+                //XXX draw level on another canvas or something?
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                if (jsonData) {
+                    renderFrame(jsonData);
+                    lastFrame = jsonData;
+                } else {
+                    renderFrame(lastFrame);
+                }
 
-        function renderWorms(jsonData) {
-            try {
-                var worms = jsonData.worms;
-                if (worms) {
-                    $.each(worms, function (wormIndex, value) {
-                        context.beginPath();
-                        var lines = this;
-                        var lastX;
-                        var lastY;
-                        $.each(this, function (index) {
-                            // move context if this is the first step or if we just crossed a border
-                            if (index === 0 || Math.abs(lastX - this.x) > 100 || Math.abs(lastY - this.y) > 100) {
-                                context.moveTo(this.x, this.y);
+                renderBoard();
+            }
+
+            function renderFrame(jsonData) {
+                renderWorms(jsonData);
+                renderApples(jsonData);
+            }
+
+            function renderWorms(jsonData) {
+                try {
+                    var worms = jsonData.worms;
+                    if (worms) {
+                        $.each(worms, function (wormIndex, value) {
+                            context.beginPath();
+                            var lines = this;
+                            var lastX;
+                            var lastY;
+                            $.each(this, function (index) {
+                                // move context if this is the first step or if we just crossed a border
+                                if (index === 0 || Math.abs(lastX - this.x) > 100 || Math.abs(lastY - this.y) > 100) {
+                                    context.moveTo(this.x * scaleX, this.y * scaleY);
+                                } else {
+                                    context.lineTo(this.x * scaleX, this.y * scaleY);
+                                }
+
+                                if (index + 1 === lines.length && wormIndex === match.your_number) {
+                                    headX = this.x * scaleX;
+                                    headY = this.y * scaleY;
+                                }
+                                lastX = this.x;
+                                lastY = this.y;
+                            });
+                            if (wormIndex === match.your_number) {
+                                context.strokeStyle = 'black';
                             } else {
-                                context.lineTo(this.x, this.y);
+                                context.strokeStyle = WORM_COLORS[wormIndex];
                             }
-
-                            if (index + 1 === lines.length && wormIndex === match.your_number) {
-                                headX = this.x;
-                                headY = this.y;
-                            }
-                            lastX = this.x;
-                            lastY = this.y;
+                            context.stroke();
                         });
-                        context.stroke();
-                    });
-                } else {
-                    console.log("no worms");
+                    } else {
+                        console.log("no worms");
+                    }
+                } catch (e) {
+                    window.ploxworm.log("error in renderWorms: " + e.stack);
                 }
-            } catch (e) {
-                window.ploxworm.log("error in renderWorms: " + e.stack);
             }
-        }
 
-        function renderApples(jsonData) {
-            try {
-                var apples = jsonData.apples;
-                if (apples) {
-                    $.each(apples, function (appleIndex, value) {
+            function renderApples(jsonData) {
+                try {
+                    var apples = jsonData.apples;
+                    if (apples) {
+                        $.each(apples, function (appleIndex, value) {
+                            context.beginPath();
+                            var color;
+                            if (this.type === "red") {
+                                color = 'red';
+                            } else {
+                                color = 'yellow';
+                            }
+                            ellipse(this.x, this.y, APPLE_RADIUS, color);
+
+                            context.fill();
+                        });
+                    } else {
+                        console.log("no apples");
+                    }
+
+                } catch (e) {
+                    window.ploxworm.log("error in renderApples: " + e.stack);
+                }
+            }
+
+            function renderBoard() {
+                try {
+                    var obstacles = match.obstacles;
+                    if (obstacles) {
+                        var color = 'gray';
                         context.beginPath();
-                        context.arc(this.x, this.y, APPLE_RADIUS, 0, 2 * Math.PI, false);
-                        if (this.type === "red") {
-                            context.fillStyle = 'red';
-                        } else {
-                            context.fillStyle = 'yellow';
-                        }
+                        $.each(obstacles, function () {
+                            if (this.type === 'rectangle') {
+                                context.rect(this.left * scaleX, this.top * scaleY, (this.right - this.left) * scaleX, (this.bottom - this.top) * scaleY);
+                            } else if (this.type === 'circle') {
+                                // arc does not support ellipse form
+//                                context.arc(this.x* scaleX, this.y* scaleY, this.radius, 0, 2 * Math.PI, false);
+                                ellipse(this.x, this.y, this.radius, color);
+//                                context.fill();
+                            } else {
+                                console.log('wtf unknown type: ' + this.type);
+                            }
+                        });
+                        context.fillStyle = color;
                         context.fill();
-                    });
-                } else {
-                    console.log("no apples");
+                    }
+                } catch (e) {
+                    window.ploxworm.log("error in renderBord: " + e.stack);
                 }
-
-            } catch (e) {
-                window.ploxworm.log("error in renderApples: " + e.stack);
             }
-        }
 
-        function renderBoard() {
-            try {
-                var obstacles = match.obstacles;
-                if (obstacles) {
-                    context.beginPath();
-                    $.each(obstacles, function () {
-                        if (this.type === 'rectangle') {
-                            context.rect(this.left, this.top, this.right - this.left, this.bottom - this.top);
-                        } else if (this.type === 'circle') {
-                            context.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
-                        } else {
-                            console.log('wtf unknown type: ' + this.type);
-                        }
-                    });
-                    context.fillStyle = 'gray';
-                    context.fill();
-                }
-            } catch (e) {
-                window.ploxworm.log("error in renderBord: " + e.stack);
+            function ellipse(x, y, radius, color) {
+                context.fillStyle = color;
+                context.strokeStyle = color;
+                context.save();
+                context.scale(scaleX, scaleY);
+                context.beginPath();
+                context.arc(x, y, radius, 0, Math.PI * 2, false);
+                context.stroke();
+                context.closePath();
+                context.fill();
+                context.restore();
             }
         }
 
         function endRound(data) {
             window.ploxworm.log("Game ended!");
             gameRunning = false;
-            if (match.your_number === data.winner) {
-                showTitle("YOU WON!");
+            if (match.your_number === data.winner_number) {
+                showTitleString("YOU WON!");
             } else {
                 //XXX get winner from match
-                showTitle("GAME OVER MAN!");
+                showTitleString("GAME OVER MAN!");
+                if (data.winner_message) {
+                    showMessageString(data.winner_message);
+                }
             }
         }
 
@@ -262,8 +306,13 @@
         }
 
         function showTitle(data) {
+            showTitleString(data.message);
+        }
+
+        function showTitleString(messageString) {
             var title = $("#title");
-            title.text(data.message);
+//            window.ploxworm.log("show title: " + messageString);
+            title.text(messageString);
             title.show();
         }
 
@@ -278,7 +327,7 @@
 
         function showMessageString(messageString) {
             var message = $("#message");
-            window.ploxworm.log("show message: " + messageString);
+//            window.ploxworm.log("show message: " + messageString);
             message.text(messageString);
             message.show();
         }
@@ -332,7 +381,7 @@
 //                    console.log('sending direction: ' + x + ', ' + y);
                     ws.send(JSON.stringify(directionMessage));
                 } else {
-                    console.log('failed to get direction: ' + mouseX + ', ' + headX);
+//                    console.log('failed to get direction: ' + mouseX + ', ' + headX);
                 }
 
                 if (gameRunning) {
@@ -370,7 +419,20 @@
             }
         }
 
+        function adjustForResolution() {
+//            window.ploxworm.log("adjustForResolution: " + window.innerWidth);
+            canvas.width = window.innerWidth - 200;
+            canvas.height = window.innerHeight - 200;
+
+            render(null);
+        }
+
         window.ploxworm.log("loaded");
+
+        adjustForResolution();
+
+        window.onresize = adjustForResolution;
+
     });
 
 })();

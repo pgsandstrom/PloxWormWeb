@@ -9,6 +9,6 @@ import java.io.Serializable;
 public class Test implements Serializable {
 
     public String getTest() {
-        return "test";
+        return "alpha";
     }
 }

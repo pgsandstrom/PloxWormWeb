@@ -36,7 +36,7 @@ public class HumanPlayer extends Player {
         try {
             ws.send(message);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("PLAYER DISCONNECTED!");
             disconnected();
         }
     }

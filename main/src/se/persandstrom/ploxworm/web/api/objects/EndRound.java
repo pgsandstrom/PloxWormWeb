@@ -7,21 +7,21 @@ public class EndRound implements AbstractApiObject {
 
     private final EndType endType;
     private final long score;
-    private final Integer winnerNumber;
-    private final String winnerMessage;
+    private final Integer winner_number;
+    private final String winner_message;
 
     public EndRound(EndType endType, long score) {
         this.endType = endType;
         this.score = score;
-        this.winnerNumber = null;
-        this.winnerMessage = null;
+        this.winner_number = null;
+        this.winner_message = null;
     }
 
     public EndRound(EndType endType, long score, int winnerNumber, String winnerMessage) {
         this.endType = endType;
         this.score = score;
-        this.winnerNumber = winnerNumber;
-        this.winnerMessage = winnerMessage;
+        this.winner_number = winnerNumber;
+        this.winner_message = winnerMessage;
     }
 
     public enum EndType {
