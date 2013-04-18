@@ -11,20 +11,19 @@
         var ws;
 
         var canvas = $("#canvas")[0];
-        var canvasContainer = $("#canvas-container");
+        var canvasContainer = $("#main-bar");
         canvasContainer.resizable();
         var context = canvas.getContext('2d');
         var match;
         var lastFrame;
         var inQueue = false;
 
-        //TODO temp:
-        $("#scoreboard").resizable();
-
         var headX;
         var headY;
         var mouseX;
         var mouseY;
+        var scaleX = 1;
+        var scaleY = 1;
 
         var gameRunning = false;
 
@@ -156,8 +155,8 @@
             if (match) {
                 // we use scaleX not only to scale where the mouse is relative to the worm head, but also to scale the graphics.
                 // Why not use context.scale()? Because it makes lines look like crap.
-                var scaleX = canvas.width / match.size_x;
-                var scaleY = canvas.height / match.size_y;
+                scaleX = canvas.width / match.size_x;
+                scaleY = canvas.height / match.size_y;
 
                 //XXX draw level on another canvas or something?
                 context.clearRect(0, 0, canvas.width, canvas.height);
@@ -250,10 +249,7 @@
                             if (this.type === 'rectangle') {
                                 context.rect(this.left * scaleX, this.top * scaleY, (this.right - this.left) * scaleX, (this.bottom - this.top) * scaleY);
                             } else if (this.type === 'circle') {
-                                // arc does not support ellipse form
-//                                context.arc(this.x* scaleX, this.y* scaleY, this.radius, 0, 2 * Math.PI, false);
                                 ellipse(this.x, this.y, this.radius, color);
-//                                context.fill();
                             } else {
                                 console.log('wtf unknown type: ' + this.type);
                             }
@@ -305,7 +301,7 @@
         }
 
         function putInQueue(data) {
-            window.ploxworm.log("putInQueue");
+            window.ploxworm.log("put in queue");
             inQueue = true;
             showMessageString("Waiting for opponents...");
         }
@@ -316,7 +312,6 @@
 
         function showTitleString(messageString) {
             var title = $("#title");
-//            window.ploxworm.log("show title: " + messageString);
             title.text(messageString);
             title.show();
         }
@@ -332,7 +327,6 @@
 
         function showMessageString(messageString) {
             var message = $("#message");
-//            window.ploxworm.log("show message: " + messageString);
             message.text(messageString);
             message.show();
         }
@@ -381,9 +375,8 @@
                     var directionMessage = {};
                     directionMessage.type = 'direction';
                     directionMessage.data = {};
-                    directionMessage.data.x = x;
-                    directionMessage.data.y = y;
-//                    console.log('sending direction: ' + x + ', ' + y);
+                    directionMessage.data.x = x / scaleX;
+                    directionMessage.data.y = y / scaleY;
                     ws.send(JSON.stringify(directionMessage));
                 } else {
 //                    console.log('failed to get direction: ' + mouseX + ', ' + headX);
@@ -425,16 +418,9 @@
         }
 
         function adjustForResolution() {
-//            window.ploxworm.log("adjustForResolution: " + window.innerWidth);
-//            canvas.width = window.innerWidth - 200;
-//            canvas.height = window.innerHeight - 200;
-
             canvas.width = canvasContainer.width();
             canvas.height = canvasContainer.height();
-
-            window.ploxworm.log("adjustForResolution: " + canvas.width);
-
-
+//            window.ploxworm.log("adjustForResolution: " + canvas.width);
             render(null);
         }
 
