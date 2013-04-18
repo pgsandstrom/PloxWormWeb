@@ -14,13 +14,18 @@ body {
     border: 1px dotted;
 }
 
+#canvas-container {
+    width: 800px;
+    height: 800px;
+}
+
 #controller {
     float: left;
 }
 
 #scoreboard {
     margin: 20px;
-    background: #FFFFFF;
+    background: #bbbbbb;
     float: left;
 }
 

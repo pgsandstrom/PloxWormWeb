@@ -11,10 +11,15 @@
         var ws;
 
         var canvas = $("#canvas")[0];
+        var canvasContainer = $("#canvas-container");
+        canvasContainer.resizable();
         var context = canvas.getContext('2d');
         var match;
         var lastFrame;
         var inQueue = false;
+
+        //TODO temp:
+        $("#scoreboard").resizable();
 
         var headX;
         var headY;
@@ -159,7 +164,7 @@
                 if (jsonData) {
                     renderFrame(jsonData);
                     lastFrame = jsonData;
-                } else {
+                } else if (lastFrame) {
                     renderFrame(lastFrame);
                 }
 
@@ -421,8 +426,14 @@
 
         function adjustForResolution() {
 //            window.ploxworm.log("adjustForResolution: " + window.innerWidth);
-            canvas.width = window.innerWidth - 200;
-            canvas.height = window.innerHeight - 200;
+//            canvas.width = window.innerWidth - 200;
+//            canvas.height = window.innerHeight - 200;
+
+            canvas.width = canvasContainer.width();
+            canvas.height = canvasContainer.height();
+
+            window.ploxworm.log("adjustForResolution: " + canvas.width);
+
 
             render(null);
         }
