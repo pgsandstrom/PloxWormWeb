@@ -1,7 +1,6 @@
 (function () {
     "use strict";
 
-//    if (window.blah == null) {
     if (!window.ploxworm) {
         window.ploxworm = {};
     }
@@ -14,5 +13,7 @@
         currentLog = currentLog.substr(0, 2048);
         textarea.text(currentLog);
     };
+
+    console.log("loaded log");
 
 })();
