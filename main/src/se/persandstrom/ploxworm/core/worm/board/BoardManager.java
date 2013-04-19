@@ -149,6 +149,7 @@ public class BoardManager {
 
         //startPositions:
         startPositionList.add(new StartPosition(200, 200, 1, 1));
+        startPositionList.add(new StartPosition(600, 200, 1, 1));
 
         return new Board(core, title, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce,
                 startPositionList);
