@@ -143,9 +143,9 @@ define(["jquery", "jquery-ui-1.10.2.custom.min", "log"],
                 window.ploxworm.log("websocket loaded 1");
 
                 return websocket;
-            };  //websocket
+            };  //end websocket
             return websocket();
-        };  //constructor
+        };  //end constructor
         console.log("websocket loaded 2");
         window.ploxworm.log("websocket loaded 2");
         return websocketConstructor;

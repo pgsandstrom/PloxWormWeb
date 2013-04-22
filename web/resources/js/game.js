@@ -10,9 +10,13 @@ require(["jquery", "websocket"],
             //XXX more awesome colors
             var WORM_COLORS = ['Chartreuse', 'Darkorange', 'blue'];
 
+            var $messages = $("#messages");
+            var $title = $("#title");
+            var $message = $("#message");
+
             var canvas = $("#canvas")[0];
-            var canvasContainer = $("#main-bar");
-            canvasContainer.resizable();
+            var $canvasContainer = $("#main-bar");
+            $canvasContainer.resizable();
             var context = canvas.getContext('2d');
             var match;
             var lastFrame;
@@ -38,12 +42,12 @@ require(["jquery", "websocket"],
             game.updateScoreboard = function updateScoreboard(jsonData) {
                 var scores = jsonData.scores;
 
-                var scoreList = $("#score-list");
-                scoreList.empty();
+                var $scoreList = $("#score-list");
+                $scoreList.empty();
                 $.each(scores, function (index, value) {
                     var listItem = $(document.createElement('li'));
                     listItem.text(value.player_name + ":\t" + value.score);
-                    scoreList.append(listItem);
+                    $scoreList.append(listItem);
                 });
             };
 
@@ -223,14 +227,12 @@ require(["jquery", "websocket"],
             };
 
             game.showTitleString = function showTitleString(messageString) {
-                var title = $("#title");
-                title.text(messageString);
-                title.show();
+                $title.text(messageString);
+                $title.show();
             };
 
             game.hideTitle = function hideTitle() {
-                var title = $("#title");
-                title.hide();
+                $title.hide();
             };
 
             game.showMessage = function showMessage(data) {
@@ -238,14 +240,12 @@ require(["jquery", "websocket"],
             };
 
             game.showMessageString = function showMessageString(messageString) {
-                var message = $("#message");
-                message.text(messageString);
-                message.show();
+                $message.text(messageString);
+                $message.show();
             };
 
             game.hideMessage = function hideMessage() {
-                var message = $("#message");
-                message.hide();
+                $message.hide();
             };
 
             function playSound(soundObjId) {
@@ -289,9 +289,15 @@ require(["jquery", "websocket"],
 
 
             function adjustForResolution() {
-                canvas.width = canvasContainer.width();
-                canvas.height = canvasContainer.height();
-//            window.ploxworm.log("adjustForResolution: " + canvas.width);
+                var containerWidth = $canvasContainer.width();
+                canvas.width = containerWidth;
+                canvas.height = $canvasContainer.height();
+                $messages.width(containerWidth);
+                var titleFontSize = containerWidth / 10;
+                $title.css({fontSize: titleFontSize});
+                var messageFontSize = containerWidth / 15;
+                $message.css({fontSize: messageFontSize});
+
                 game.render(null);
             }
 
