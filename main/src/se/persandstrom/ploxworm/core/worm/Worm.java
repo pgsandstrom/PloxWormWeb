@@ -1,5 +1,6 @@
 package se.persandstrom.ploxworm.core.worm;
 
+import org.apache.log4j.Logger;
 import se.persandstrom.ploxworm.core.Core;
 import se.persandstrom.ploxworm.core.Line;
 import se.persandstrom.ploxworm.core.worm.board.Apple;
@@ -12,7 +13,9 @@ import java.util.List;
 
 public abstract class Worm {
 
-    protected static final String TAG = "Worm";
+    static final String TAG = "Worm";
+
+    static Logger log = Logger.getLogger(Worm.class.getName());
 
     public final static int MOVE_OK = 0;
     public final static int MOVE_DEATH = 1;
@@ -114,7 +117,7 @@ public abstract class Worm {
         }
 
         if (isLineColliding(newLine, lineListSize)) {
-            System.out.println("omg that was real^");
+//            log.debug("death");
             return MOVE_DEATH;
         }
 
@@ -166,8 +169,7 @@ public abstract class Worm {
         for (int i = 0; i < iterationStop; i++) {
             Line line = lineList.get(i);
             if (isIntersection(newLine, line)) {
-                System.out.println("bam to self!");
-                //				if (Constant.DEBUG) Log.d(TAG, "BAM!");
+//                log.debug("bam to self");
                 return true;
             }
         }
@@ -179,8 +181,7 @@ public abstract class Worm {
                 List<Line> otherWormLineList = worm.getLineList();
                 for (Line line : otherWormLineList) {
                     if (isIntersection(newLine, line)) {
-                        System.out.println("bam to other!");
-                        //						if (Constant.DEBUG) Log.d(TAG, "BAM ON WORM!");
+//                        log.debug("bam to other");
                         return true;
                     }
                 }
@@ -190,7 +191,6 @@ public abstract class Worm {
         //compare to objects:
         for (Obstacle obstacle : obstacleList) {
             if (obstacle.isCollide(newLine)) {
-                //				if (Constant.DEBUG) Log.d(TAG, "BAM ON OBSTACLE!");
                 return true;
             }
         }

@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
@@ -13,6 +14,7 @@ import java.io.IOException;
  */
 public class HumanPlayer extends Player {
 
+    static Logger log = Logger.getLogger(HumanPlayer.class.getName());
 
     private final SimpleWebSocket ws;
     private boolean connected;
@@ -32,18 +34,15 @@ public class HumanPlayer extends Player {
     }
 
     public void send(String message) {
-//        System.out.println(this + " send: " + message);
         try {
             ws.send(message);
         } catch (IOException e) {
-            System.out.println("PLAYER DISCONNECTED!");
+            log.debug("IOException: Player disconnected!");
             disconnected();
         }
     }
 
     public void received(String message) {
-//        System.out.println(this + " received: " + message);
-
         JsonObject msgJson = (JsonObject) parser.parse(message);
         parent.received(this, msgJson);
     }
@@ -58,7 +57,6 @@ public class HumanPlayer extends Player {
     }
 
     public void open() {
-        System.out.println("open!");
         connected = true;
         parent.open(this);
     }

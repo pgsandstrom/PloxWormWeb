@@ -1,6 +1,7 @@
 package se.persandstrom.ploxworm.web;
 
 import com.google.gson.JsonObject;
+import org.apache.log4j.Logger;
 import se.persandstrom.ploxworm.core.Core;
 import se.persandstrom.ploxworm.core.worm.board.BoardType;
 import se.persandstrom.ploxworm.web.api.ApiObjectFactory;
@@ -17,6 +18,8 @@ import java.util.Random;
 @Named("matchMaker")
 @ApplicationScoped
 public class MatchMaker implements Serializable, PlayerParent {
+
+    static Logger log = Logger.getLogger(MatchMaker.class.getName());
 
     @Inject
     InitHolder initHolder;
@@ -35,7 +38,7 @@ public class MatchMaker implements Serializable, PlayerParent {
 
         if (!player.isConnected()) {
             //TODO
-            System.out.println("wtf player not connected");
+            log.error("wtf player not connected");
         }
 
         switch (matchRequest.getGameType()) {
@@ -52,7 +55,7 @@ public class MatchMaker implements Serializable, PlayerParent {
     }
 
     private void startSinglePlayer(HumanPlayer player, boolean withCpu, int level) {
-        System.out.println("startSinglePlayer: " + level);
+        log.debug("startSinglePlayer: " + level);
         WebGameController gameController = new WebGameController(initHolder, player);
         Core.Builder builder = new Core.Builder(gameController);
 //        builder.setEternalGame(false);

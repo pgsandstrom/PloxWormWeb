@@ -2,7 +2,9 @@ package se.persandstrom.ploxworm.web;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.apache.log4j.Logger;
 import se.persandstrom.ploxworm.core.Core;
+import se.persandstrom.ploxworm.core.worm.Worm;
 import se.persandstrom.ploxworm.web.api.ApiObjectFactory;
 
 import java.util.List;
@@ -13,6 +15,8 @@ import java.util.List;
  * Time: 12:42
  */
 public class Game implements PlayerParent {
+
+    static Logger log = Logger.getLogger(Game.class.getName());
 
     private final ApiObjectFactory apiObjectFactory = new ApiObjectFactory();
 
@@ -46,11 +50,11 @@ public class Game implements PlayerParent {
 
         String type = message.get("type").getAsString();
         JsonObject data = message.get("data").getAsJsonObject();
-//        System.out.println("type: " + type);
+        log.debug("type: " + type);
         if ("direction".equals(type)) {
             gameController.setAcc(playerNumber, data.get("x").getAsFloat(), data.get("y").getAsFloat());
         } else {
-            System.out.println("Game unknown type: " + type);
+            log.debug("Game unknown type: " + type);
         }
     }
 

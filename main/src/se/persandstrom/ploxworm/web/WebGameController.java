@@ -3,6 +3,7 @@ package se.persandstrom.ploxworm.web;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.apache.log4j.Logger;
 import se.persandstrom.ploxworm.core.Core;
 import se.persandstrom.ploxworm.core.GameController;
 import se.persandstrom.ploxworm.core.Line;
@@ -19,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 public class WebGameController implements GameController {
+
+    static Logger log = Logger.getLogger(WebGameController.class.getName());
 
     InitHolder initHolder;
 
@@ -68,7 +71,7 @@ public class WebGameController implements GameController {
 
     @Override
     public void death(Worm worm, boolean expected) {
-        System.out.println("death: " + wormToPlayer.get(worm).getName());
+        log.debug("death: " + wormToPlayer.get(worm).getName());
         Player player = wormToPlayer.get(worm);
         Death death = new Death(player.getPlayerNumber());
 
@@ -95,14 +98,12 @@ public class WebGameController implements GameController {
 
     @Override
     public void showTitle(String title) {
-        System.out.println("showTitle");
         JsonObject apiObject = apiObjectFactory.createApiObject(new Title(title));
         sendToAll(apiObject);
     }
 
     @Override
     public void showMessage(String message) {
-        System.out.println("showMessage");
         JsonObject apiObject = apiObjectFactory.createApiObject(new Message(message));
         sendToAll(apiObject);
     }
@@ -167,8 +168,6 @@ public class WebGameController implements GameController {
 
     @Override
     public void render() {
-//        System.out.println("render");
-
         //Gson is at least 3 times slower than manually building it, so build it manually...
         JsonObject data = new JsonObject();
 
@@ -227,7 +226,7 @@ public class WebGameController implements GameController {
 
     @Override
     public void end(HumanWorm worm, boolean victory, boolean expected, int winnerNumber) {
-        System.out.println("end winnerNumber: " + winnerNumber);
+        log.debug("end winnerNumber: " + winnerNumber);
 
         //XXX determine endtype better. Do we really need 3 types?
         EndRound.EndType endType;

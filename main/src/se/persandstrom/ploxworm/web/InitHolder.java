@@ -1,6 +1,7 @@
 package se.persandstrom.ploxworm.web;
 
 import com.google.gson.JsonObject;
+import org.apache.log4j.Logger;
 import se.persandstrom.ploxworm.web.api.ApiObjectFactory;
 import se.persandstrom.ploxworm.web.api.objects.MatchRequest;
 
@@ -16,6 +17,8 @@ import java.util.Set;
 @Named("initHolder")
 @ApplicationScoped
 public class InitHolder implements PlayerParent {
+
+    static Logger log = Logger.getLogger(InitHolder.class.getName());
 
     @Inject
     ApiObjectFactory apiObjectFactory;
@@ -41,13 +44,13 @@ public class InitHolder implements PlayerParent {
             matchMaker.addPlayer(player, matchRequest);
         } else {
             //the client might send a few "direction"-messages after he died, then this will happen
-            System.out.println("received wrong class: " + apiObjectFactory.getType(message));
+            log.debug("received wrong class: " + apiObjectFactory.getType(message));
         }
     }
 
     @Override
     public void remove(HumanPlayer player) {
-        System.out.println("Player removed from InitHolder");
+        log.debug("Player removed from InitHolder");
         playerSet.remove(player);
     }
 

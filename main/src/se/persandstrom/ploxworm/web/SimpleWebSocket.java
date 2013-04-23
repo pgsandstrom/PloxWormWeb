@@ -2,6 +2,7 @@ package se.persandstrom.ploxworm.web;
 
 import org.apache.catalina.websocket.MessageInbound;
 import org.apache.catalina.websocket.WsOutbound;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -13,6 +14,8 @@ import java.nio.CharBuffer;
  * Time: 12:25
  */
 public class SimpleWebSocket extends MessageInbound {
+
+    static Logger log = Logger.getLogger(SimpleWebSocket.class.getName());
 
     private WsOutbound outbound;
 
@@ -28,11 +31,7 @@ public class SimpleWebSocket extends MessageInbound {
 
     @Override
     protected void onTextMessage(CharBuffer charBuffer) throws IOException {
-//        System.out.println("onTextMessage");
         owner.received(String.valueOf(charBuffer));
-
-        //TODO temp:
-//        outbound.writeTextMessage(charBuffer);
     }
 
     public void send(String message) throws IOException {
@@ -41,14 +40,14 @@ public class SimpleWebSocket extends MessageInbound {
 
     @Override
     public void onOpen(WsOutbound outbound) {
-        System.out.println("onOpen");
+        log.debug("onOpen");
         this.outbound = outbound;
         owner.open();
     }
 
     @Override
     protected void onClose(int status) {
-        System.out.println("onClose");
+        log.debug("onClose");
         owner.disconnected();
     }
 
