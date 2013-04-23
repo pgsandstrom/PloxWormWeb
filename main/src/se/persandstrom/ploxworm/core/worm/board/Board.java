@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Board {
 
@@ -46,8 +47,11 @@ public class Board {
         this.ySize = ySize;
         this.appleEatGoal = appleEatGoal;
         this.startPositionList = startPositionList;
-        this.wormList = Collections.synchronizedList(new ArrayList<Worm>());
-        humanWormList = Collections.synchronizedList(new ArrayList<HumanWorm>());
+        /*
+        CopyOnWriteArrayList is way better than Collections.synchronizedList since we traverse so much more than mutate.
+         */
+        this.wormList = new CopyOnWriteArrayList<Worm>();
+        humanWormList = new CopyOnWriteArrayList<HumanWorm>();
 
         hasPlacedGoldApple = false;
         random = new Random();

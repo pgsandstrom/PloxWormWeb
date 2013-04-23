@@ -17,6 +17,7 @@ import se.persandstrom.ploxworm.web.api.ApiObjectFactory;
 import se.persandstrom.ploxworm.web.api.objects.*;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class WebGameController implements GameController {
 
@@ -39,14 +40,14 @@ public class WebGameController implements GameController {
     private int highestPlayerNumber;
 
     public WebGameController(InitHolder initHolder, HumanPlayer player) {
-        humanPlayerList = Collections.synchronizedList(new ArrayList<HumanPlayer>());
+        humanPlayerList = new CopyOnWriteArrayList<HumanPlayer>();
         humanPlayerList.add(player);
         humanPlayerAcceleration = new HashMap<Worm, Float[]>();
         this.initHolder = initHolder;
     }
 
     public WebGameController(InitHolder initHolder, List<HumanPlayer> humanPlayerList) {
-        this.humanPlayerList = Collections.synchronizedList(humanPlayerList);
+        this.humanPlayerList = humanPlayerList;
         humanPlayerAcceleration = new HashMap<Worm, Float[]>();
         this.initHolder = initHolder;
 

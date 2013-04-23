@@ -14,6 +14,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Named("matchMaker")
 @ApplicationScoped
@@ -124,7 +125,7 @@ public class MatchMaker implements Serializable, PlayerParent {
                 playerList.add(waitingPlayer);
                 playerList.add(player);
 
-                List<HumanPlayer> humanPlayerList = new ArrayList<HumanPlayer>();
+                List<HumanPlayer> humanPlayerList = new CopyOnWriteArrayList<HumanPlayer>();
                 humanPlayerList.add(waitingPlayer);
                 humanPlayerList.add(player);
                 WebGameController gameController = new WebGameController(initHolder, humanPlayerList);
