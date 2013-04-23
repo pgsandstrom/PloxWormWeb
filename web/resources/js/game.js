@@ -273,7 +273,7 @@ require(["jquery", "websocket"],
             });
 
             function startSendingPosition() {
-                setTimeout(updateWormDirection, 500);  //XXX time it takes for game to start, actually, or something lol
+                setTimeout(updateWormDirection, 3000);  //XXX time it takes for game to start, actually, or something lol
 
                 function updateWormDirection() {
 //                console.log('updateWormDirection');

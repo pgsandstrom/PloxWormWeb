@@ -22,30 +22,26 @@ define(["jquery", "jquery-ui-1.10.2.custom.min", "log"],
                             sendGameRequest();
                         };
 
+                        var messageTypeMapper = {
+                            'frame': game.render,
+                            'scoreboard': game.updateScoreboard,
+                            'match': game.startGame,
+                            'end_round': game.endRound,
+                            'death': game.death,
+                            'put_in_queue': game.putInQueue,
+                            'show_title': game.showTitle,
+                            'hide_title': game.hideTitle,
+                            'show_message': game.showMessage,
+                            'hide_message': game.hideMessage
+                        };
+
                         ws.onmessage = function (evt) {
                             var received_msg = evt.data;
                             var msgJson = $.parseJSON(received_msg);
-                            if (msgJson.type === 'frame') {
-                                game.render(msgJson.data);
-                            } else if (msgJson.type === 'scoreboard') {
-                                game.updateScoreboard(msgJson.data);
-                            } else if (msgJson.type === 'match') {
-                                //currently this is our "game started" signal
-                                game.startGame(msgJson.data);
-                            } else if (msgJson.type === 'end_round') {
-                                game.endRound(msgJson.data);
-                            } else if (msgJson.type === 'death') {
-                                game.death(msgJson.data);
-                            } else if (msgJson.type === 'put_in_queue') {
-                                game.putInQueue(msgJson.data);
-                            } else if (msgJson.type === 'show_title') {
-                                game.showTitle(msgJson.data);
-                            } else if (msgJson.type === 'hide_title') {
-                                game.hideTitle();
-                            } else if (msgJson.type === 'show_message') {
-                                game.showMessage(msgJson.data);
-                            } else if (msgJson.type === 'hide_message') {
-                                game.hideMessage();
+                            var method = messageTypeMapper[msgJson.type];
+
+                            if (method) {
+                                method(msgJson.data);
                             } else {
                                 window.ploxworm.log('unknown data: ' + msgJson);
                                 window.ploxworm.log('unknown data 2: ' + msgJson.type);
