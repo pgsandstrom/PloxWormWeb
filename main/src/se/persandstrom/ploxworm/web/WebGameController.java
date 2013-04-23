@@ -16,10 +16,7 @@ import se.persandstrom.ploxworm.core.worm.board.StartPosition;
 import se.persandstrom.ploxworm.web.api.ApiObjectFactory;
 import se.persandstrom.ploxworm.web.api.objects.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class WebGameController implements GameController {
 
@@ -33,7 +30,7 @@ public class WebGameController implements GameController {
     private final List<HumanPlayer> humanPlayerList;
     private final Map<Worm, Float[]> humanPlayerAcceleration;
 
-    private List<Player> playerList = new ArrayList<Player>();
+    private final List<Player> playerList = Collections.synchronizedList(new ArrayList<Player>());
 
     private final Map<Integer, Player> playerNumberToPlayer = new HashMap<Integer, Player>();
     private final Map<Player, Worm> playerToWorm = new HashMap<Player, Worm>();
@@ -42,14 +39,14 @@ public class WebGameController implements GameController {
     private int highestPlayerNumber;
 
     public WebGameController(InitHolder initHolder, HumanPlayer player) {
-        humanPlayerList = new ArrayList<HumanPlayer>();
+        humanPlayerList = Collections.synchronizedList(new ArrayList<HumanPlayer>());
         humanPlayerList.add(player);
         humanPlayerAcceleration = new HashMap<Worm, Float[]>();
         this.initHolder = initHolder;
     }
 
     public WebGameController(InitHolder initHolder, List<HumanPlayer> humanPlayerList) {
-        this.humanPlayerList = humanPlayerList;
+        this.humanPlayerList = Collections.synchronizedList(humanPlayerList);
         humanPlayerAcceleration = new HashMap<Worm, Float[]>();
         this.initHolder = initHolder;
 
@@ -68,7 +65,7 @@ public class WebGameController implements GameController {
     public float getXacc(HumanWorm worm) {
         Float xAcc = humanPlayerAcceleration.get(worm)[0];
         if (xAcc == null) {
-            return 0;
+            return 0f;
         } else {
             return xAcc;
         }
@@ -78,7 +75,7 @@ public class WebGameController implements GameController {
     public float getYacc(HumanWorm worm) {
         Float yAcc = humanPlayerAcceleration.get(worm)[1];
         if (yAcc == null) {
-            return 0;
+            return 0.1f;
         } else {
             return yAcc;
         }
@@ -98,15 +95,22 @@ public class WebGameController implements GameController {
         Player player = playerNumberToPlayer.get(playerNumber);
         Worm worm = playerToWorm.get(player);
         Float[] floats = humanPlayerAcceleration.get(worm);
-        floats[0] = xAcc;
-        floats[1] = yAcc;
+        if (floats != null) {
+            floats[0] = xAcc;
+            floats[1] = yAcc;
+        }
     }
 
     @Override
     public void updateScore(List<Worm> wormList) {
         ScoreBoard scoreBoard = new ScoreBoard();
         for (Worm worm : wormList) {
-            String playerName = wormToPlayer.get(worm).getName();
+            Player player = wormToPlayer.get(worm);
+            if(player == null){
+                log.error("player was null, skipping");
+                continue;
+            }
+            String playerName = player.getName();
             scoreBoard.addScore(scoreBoard.new Score(playerName, worm.score));
         }
 
@@ -216,8 +220,10 @@ public class WebGameController implements GameController {
 
     @Override
     public boolean removePlayer(Player player) {
+
         Worm worm = playerToWorm.get(player);
         boolean endGame = core.death(worm, false);
+        core.removeWorm(worm);
         log.debug("removePlayer. endGame: " + endGame);
 
         playerToWorm.remove(player);

@@ -157,6 +157,7 @@ public abstract class Worm {
     }
 
     protected boolean isLineColliding(Line newLine, int lineListSize) {
+        //TODO we still fail at finding collision if worm is traveling perfectly  horizontally
         int iterationStop = Math.min(lineListSize, maxLength) - 10;
 
         //compare to our worm:

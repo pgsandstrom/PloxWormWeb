@@ -5,6 +5,7 @@ import se.persandstrom.ploxworm.core.worm.HumanWorm;
 import se.persandstrom.ploxworm.core.worm.Worm;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -45,8 +46,8 @@ public class Board {
         this.ySize = ySize;
         this.appleEatGoal = appleEatGoal;
         this.startPositionList = startPositionList;
-        this.wormList = new ArrayList<Worm>();
-        humanWormList = new ArrayList<HumanWorm>();
+        this.wormList = Collections.synchronizedList(new ArrayList<Worm>());
+        humanWormList = Collections.synchronizedList(new ArrayList<HumanWorm>());
 
         hasPlacedGoldApple = false;
         random = new Random();
@@ -65,6 +66,13 @@ public class Board {
         wormList.add(worm);
         if (worm instanceof HumanWorm) {
             humanWormList.add((HumanWorm) worm);
+        }
+    }
+
+    public void removeWorm(Worm worm) {
+        wormList.remove(worm);
+        if (worm instanceof HumanWorm) {
+            humanWormList.remove(worm);
         }
     }
 

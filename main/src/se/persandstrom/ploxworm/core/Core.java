@@ -85,9 +85,9 @@ public class Core {
     public void startGame() {
         log.debug("startGame");
 
-        wormList = board.getWormList();
-        counterWormTypes(wormList);
+        counterWormTypes();
 
+        wormList = board.getWormList();
         gameController.setNewBoard(board);
         gameController.showTitle(board.title);
 
@@ -98,16 +98,29 @@ public class Core {
         board.addWorm(worm);
         worm.init(board);
         setScore(worm, 0);
+        counterWormTypes();
     }
 
-    private void counterWormTypes(List<Worm> wormList) {
-        for (Worm worm : wormList) {
+    public void removeWorm(Worm worm) {
+        if(worm.isAlive) {
+            throw new IllegalStateException("kill the worm first");
+        }
+        board.removeWorm(worm);
+
+    }
+
+    private void counterWormTypes() {
+        int aliveAiCountTemp = 0;
+        int aliveHumanCountTemp = 0;
+        for (Worm worm : board.getWormList()) {
             if (worm.isAi()) {
-                aliveAiCount++;
+                aliveAiCountTemp++;
             } else {
-                aliveHumanCount++;
+                aliveHumanCountTemp++;
             }
         }
+        aliveHumanCount = aliveHumanCountTemp;
+        aliveAiCount = aliveAiCountTemp;
     }
 
     /**
