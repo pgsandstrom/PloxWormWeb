@@ -20,7 +20,6 @@ public class Apple {
 	
 
 	public Apple(boolean isGold, float positionX, float positionY, float radius) {
-//		if (Constant.DEBUG) Log.d(TAG, "Apple created");
 		this.isGold = isGold;
 		this.positionX = positionX;
 		this.positionY = positionY;
@@ -36,7 +35,6 @@ public class Apple {
 		double yStop = line.yStop;
 		double distance = Math.sqrt((Math.pow(positionX - xStop, 2) + Math.pow(
 				positionY - yStop, 2)));
-		// if (Constant.DEBUG) Log.d(TAG, "distance:" + distance);
 		if (distance < radius) {
 			return true;
 		} else {

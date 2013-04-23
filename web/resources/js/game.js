@@ -35,7 +35,7 @@ require(["jquery", "websocket"],
             $("#player_name").val("Anonymous " + Math.floor(Math.random() * 1000));
 
             $("#start-game").click(function () {
-                websocket.prepareGame();
+                websocket.prepareGame(true);
             });
 
             $("#stop-game").click(function () {
@@ -105,7 +105,7 @@ require(["jquery", "websocket"],
                                 var lastY;
                                 $.each(this, function (index) {
                                     // move context if this is the first step or if we just crossed a border
-                                    if (index === 0 || Math.abs(lastX - this.x) > 100 || Math.abs(lastY - this.y) > 100) {
+                                    if (index === 0 || Math.abs(lastX - this.x) > 20 || Math.abs(lastY - this.y) > 20) {
                                         context.moveTo(this.x * scaleX, this.y * scaleY);
                                     } else {
                                         context.lineTo(this.x * scaleX, this.y * scaleY);
@@ -273,7 +273,7 @@ require(["jquery", "websocket"],
             });
 
             function startSendingPosition() {
-                setTimeout(updateWormDirection, 3000);  //XXX time it takes for game to start, actually, or something lol
+                setTimeout(updateWormDirection, 50);
 
                 function updateWormDirection() {
 //                console.log('updateWormDirection');
@@ -318,6 +318,8 @@ require(["jquery", "websocket"],
         game = game();
 
         var websocket = websocketConstructor(game);
+
+        websocket.prepareGame(false);
 
         console.log("game.js outer ran");
         return game;

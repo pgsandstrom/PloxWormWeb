@@ -1,21 +1,26 @@
 package se.persandstrom.ploxworm.core;
 
+import org.apache.log4j.Logger;
 import se.persandstrom.ploxworm.core.worm.HumanWorm;
 import se.persandstrom.ploxworm.core.worm.Worm;
 import se.persandstrom.ploxworm.core.worm.ai.StupidWorm;
 import se.persandstrom.ploxworm.core.worm.board.*;
+import se.persandstrom.ploxworm.web.MatchMaker;
 
 import java.util.List;
+import java.util.Random;
 
 public class Core {
 
-    protected static final String TAG = "Core";
+    static final String TAG = "Core";
+    static Logger log = Logger.getLogger(Core.class.getName());
 
     // point related constants
     private static final int POINTS_APPLE = 50;
-    private static final int POINTS_VICTORY = 500;
+    private static final int POINTS_VICTORY = 500;  //TODO add this when victory happens
 
-    final GameController gameController;
+    private final GameController gameController;
+    private final Random random;
 
     // the game thread:
     GameThread gameThread;
@@ -40,12 +45,17 @@ public class Core {
 
     private Core(GameController gameController) {
         this.gameController = gameController;
+        this.random = new Random();
     }
 
     public void setLevel(int level, BoardType boardType) {  //TODO level should be inside BoardType or something
         this.level = level;
         Board board = BoardManager.getBoard(this, level, boardType);
         this.board = board;
+    }
+
+    public Board getBoard() {
+        return board;
     }
 
     public List<Worm> getWormList() {
@@ -56,9 +66,14 @@ public class Core {
         return board.getApples();
     }
 
-    public void startGame(int level, long score, BoardType boardType) {
-        // if (Constant.DEBUG)
-        // Log.d(TAG, "startGame: " + level + ", " + score);
+    public StartPosition getRandomStartposition() {
+        List<StartPosition> startPositionList = board.getStartPositionList();
+        int position = random.nextInt(startPositionList.size());
+        return startPositionList.get(position);
+    }
+
+    public void startGame(int level, BoardType boardType) {
+        log.debug("startGame: " + level);
 
         Board board = BoardManager.getBoard(this, level, boardType);
         this.level = level;
@@ -68,11 +83,10 @@ public class Core {
     }
 
     public void startGame() {
-        // if (Constant.DEBUG)
-        // Log.d(TAG, "startGame");
+        log.debug("startGame");
 
         wormList = board.getWormList();
-        setWormTypeCounter(wormList);
+        counterWormTypes(wormList);
 
         gameController.setNewBoard(board);
         gameController.showTitle(board.title);
@@ -80,7 +94,13 @@ public class Core {
         new StartCountDownThread().start();
     }
 
-    private void setWormTypeCounter(List<Worm> wormList) {
+    public void addWorm(Worm worm) {
+        board.addWorm(worm);
+        worm.init(board);
+        setScore(worm, 0);
+    }
+
+    private void counterWormTypes(List<Worm> wormList) {
         for (Worm worm : wormList) {
             if (worm.isAi()) {
                 aliveAiCount++;
@@ -94,7 +114,7 @@ public class Core {
      * Starts the game thread.
      */
     public void go() {
-
+        log.info("game go");
         gameStarted = true;
         gameRunning = true;
         if (gameThread != null) {
@@ -105,6 +125,7 @@ public class Core {
     }
 
     public void stop() {
+        log.info("game stopped");
         counter = 0;
         gameStarted = false;
         gameRunning = false;
@@ -115,8 +136,9 @@ public class Core {
      *
      * @param deadWorm
      * @param expected if the dead worm expected the game to end, i.e. terminated the session themselves somehow
+     * @return if the game ended
      */
-    public void death(Worm deadWorm, boolean expected) {
+    public boolean death(Worm deadWorm, boolean expected) {
         gameController.death(deadWorm, expected);
 
         if (deadWorm.isAi()) {
@@ -125,11 +147,15 @@ public class Core {
             aliveHumanCount--;
         }
 
+        log.debug("death. AliveHumanCount: " + aliveHumanCount);
+
         deadWorm.isAlive = false;
 
         boolean endGame = false;
 
-        if ((!deadWorm.isAi() && aliveHumanCount == 1)) {
+        if (board.getType() == BoardType.ETERNAL) {
+            endGame = aliveHumanCount == 0;
+        } else if ((!deadWorm.isAi() && aliveHumanCount == 1)) {
             //human died, only one human left
             endGame = true;
         } else if ((!deadWorm.isAi() && aliveHumanCount == 0)) {
@@ -140,31 +166,37 @@ public class Core {
             endGame = true;
         }
 
-        if (endGame) {
+
+        if (!endGame) {
+            return false;
+        } else {
             stop();
-        }
 
-        //we only support ONE winner...
-        Worm winnerWorm = null;
-        for (Worm worm : wormList) {
-            if (worm.isAlive) {
-                winnerWorm = worm;
-                break;
-            }
-        }
-
-        for (Worm worm : wormList) {
-            if (!worm.isAi()) {
-                if (winnerWorm == null) {
-                    gameController.end((HumanWorm) worm, worm.isAlive, false, -1);
-                } else if (winnerWorm instanceof HumanWorm) {
-                    HumanWorm humanWinner = (HumanWorm) winnerWorm;
-                    gameController.end((HumanWorm) worm, worm.isAlive, false, humanWinner.getPlayerNumber());
-                } else {
-                    //computer won:
-                    gameController.end((HumanWorm) worm, worm.isAlive, false, -1);
+            //we only support ONE winner...
+            Worm winnerWorm = null;
+            for (Worm worm : wormList) {
+                if (worm.isAlive) {
+                    winnerWorm = worm;
+                    break;
                 }
             }
+
+            for (Worm worm : wormList) {
+                if (!worm.isAi()) {
+                    if (winnerWorm == null) {
+                        gameController.end((HumanWorm) worm, worm.isAlive, false, -1);
+                    } else if (winnerWorm instanceof HumanWorm) {
+                        HumanWorm humanWinner = (HumanWorm) winnerWorm;
+                        gameController.end((HumanWorm) worm, worm.isAlive, false, humanWinner.getPlayerNumber());
+                    } else {
+                        //computer won:
+                        //TODO send out cpu winner message?
+                        gameController.end((HumanWorm) worm, worm.isAlive, false, -1);
+                    }
+                }
+            }
+
+            return true;
         }
     }
 
@@ -204,6 +236,8 @@ public class Core {
             int makeMove = worm.makeMove();
             if (makeMove == Worm.MOVE_DEATH) {
                 if (eternalGame) {
+                    worm.setStartPosition(getRandomStartposition());
+                    setScore(worm, 0);
                     worm.reset();
                 } else {
                     death(worm, false);
@@ -218,8 +252,12 @@ public class Core {
         increaseScore(worm, POINTS_APPLE);
     }
 
-    private void increaseScore(Worm worm, int newScore) {
-        worm.score += newScore;
+    private void increaseScore(Worm worm, long newScore) {
+        setScore(worm, worm.score + newScore);
+    }
+
+    private void setScore(Worm worm, long newScore) {
+        worm.score = newScore;
         gameController.updateScore(wormList);
     }
 
@@ -249,13 +287,12 @@ public class Core {
                 long currentTimeMillis = System.currentTimeMillis();
                 tic();
                 duration = System.currentTimeMillis() - currentTimeMillis;
-                // if (Constant.DEBUG) Log.d(TAG, "tic time: " + duration);
             }
         }
     }
 
     private class StartCountDownThread extends Thread {
-        private static final int STEP_WAITING_TIME = 300;
+        private static final int STEP_WAITING_TIME = 1000;
 
         int countSteps = 3;
 
@@ -290,8 +327,7 @@ public class Core {
 
         private int level = 1;
         private BoardType boardType = BoardType.SINGLE;
-        private long score = 0;
-        boolean makePlayersToAi = false;
+        boolean makePlayersToAi = false;    //for demonstration games etc
         boolean eternalGame = false;
 
         private boolean isBuilt = false;
@@ -306,10 +342,6 @@ public class Core {
 
         public void setBoardType(BoardType boardType) {
             this.boardType = boardType;
-        }
-
-        public void setScore(long score) {
-            this.score = score;
         }
 
         public void setEternalGame(boolean eternalGame) {
@@ -342,9 +374,8 @@ public class Core {
          */
         private void setupCore() {
             core.eternalGame = eternalGame;
-            if (eternalGame) {
+            if (makePlayersToAi) {
                 makePlayersToAi();
-                core.board.setAppleEatGoal(Integer.MAX_VALUE / 2);
             }
         }
 
@@ -356,8 +387,8 @@ public class Core {
             for (int i = 0; i < wormList.size(); i++) {
                 Worm worm = wormList.get(i);
                 if (worm instanceof HumanWorm) {
-                    StupidWorm stupidWorm = new StupidWorm(core, worm.color, new StartPosition(worm.xPos, worm.yPos,
-                            worm.xForce, worm.yForce));
+                    StupidWorm stupidWorm = new StupidWorm(core, new StartPosition(worm.xPos, worm.yPos, worm.xForce,
+                            worm.yForce));
                     stupidWorm.init(worm.board);
                     wormList.remove(i);
                     wormList.add(i, stupidWorm);

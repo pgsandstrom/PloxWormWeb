@@ -29,6 +29,10 @@ public class MatchMaker implements Serializable, PlayerParent {
 
     private final Random random = new Random();
 
+    private final Object eternalGameLock = new Object();
+    private Game eternalGame;
+
+    private final Object multiplayerGameLock = new Object();
     HumanPlayer waitingPlayer;
     int waitingPlayerLevel;
 
@@ -42,6 +46,9 @@ public class MatchMaker implements Serializable, PlayerParent {
         }
 
         switch (matchRequest.getGameType()) {
+            case eternal:
+                startEternalGame(player);
+                break;
             case single:
                 startSinglePlayer(player, false, matchRequest.getLevel());
                 break;
@@ -54,15 +61,38 @@ public class MatchMaker implements Serializable, PlayerParent {
         }
     }
 
+    private void startEternalGame(HumanPlayer player) {
+        synchronized (eternalGameLock) {
+            if (eternalGame == null) {
+                WebGameController gameController = new WebGameController(initHolder, player);
+                Core.Builder builder = new Core.Builder(gameController);
+                builder.setEternalGame(true);
+                builder.setLevel(0);
+                builder.setBoardType(BoardType.ETERNAL);
+
+                List<HumanPlayer> playerList = new ArrayList<HumanPlayer>();
+                playerList.add(player);
+
+                Core core = builder.build();
+                gameController.setCore(core);
+
+                //when a match has been made:
+                eternalGame = new Game(this, playerList, gameController, core);
+                eternalGame.start();
+            } else {
+                log.debug("adding to ongoing eternal game");
+                eternalGame.addPlayer(player);
+            }
+        }
+    }
+
     private void startSinglePlayer(HumanPlayer player, boolean withCpu, int level) {
         log.debug("startSinglePlayer: " + level);
         WebGameController gameController = new WebGameController(initHolder, player);
         Core.Builder builder = new Core.Builder(gameController);
-//        builder.setEternalGame(false);
+        builder.setEternalGame(false);
         builder.setLevel(level);
         builder.setBoardType(withCpu ? BoardType.VS_CPU : BoardType.SINGLE);
-//        builder.setMakePlayersToAi(false);
-        builder.setScore(0);
 
         List<HumanPlayer> playerList = new ArrayList<HumanPlayer>();
         playerList.add(player);
@@ -71,7 +101,7 @@ public class MatchMaker implements Serializable, PlayerParent {
         gameController.setCore(core);
 
         //when a match has been made:
-        Game game = new Game(playerList, gameController, core);
+        Game game = new Game(this, playerList, gameController, core);
         game.start();
     }
 
@@ -81,7 +111,7 @@ public class MatchMaker implements Serializable, PlayerParent {
         player.setName(matchRequest.getPlayerName());
         player.setWinningMessage(matchRequest.getWinningMessage());
 
-        synchronized (this) {
+        synchronized (multiplayerGameLock) {
             if (waitingPlayer == null) {
                 //put in queue
                 waitingPlayer = player;
@@ -94,19 +124,29 @@ public class MatchMaker implements Serializable, PlayerParent {
                 playerList.add(waitingPlayer);
                 playerList.add(player);
 
-                WebGameController gameController = new WebGameController(initHolder, new HumanPlayer[]{waitingPlayer,
-                        player});
+                List<HumanPlayer> humanPlayerList = new ArrayList<HumanPlayer>();
+                humanPlayerList.add(waitingPlayer);
+                humanPlayerList.add(player);
+                WebGameController gameController = new WebGameController(initHolder, humanPlayerList);
                 Core.Builder builder = new Core.Builder(gameController);
-                builder.setLevel(random.nextInt(2) == 0 ? level : waitingPlayerLevel);  //XXX should it be 2? TEST!
+                builder.setLevel(random.nextInt(2) == 0 ? level : waitingPlayerLevel);
                 builder.setBoardType(BoardType.MULTI);
-                builder.setScore(0);
                 Core core = builder.build();
                 gameController.setCore(core);
 
-                Game game = new Game(playerList, gameController, core);
+                Game game = new Game(this, playerList, gameController, core);
                 game.start();
                 waitingPlayer = null;
             }
+        }
+    }
+
+    public void gamedStopped(Game game) {
+        if (game == eternalGame) {
+            log.info("eternal game stopped");
+            eternalGame = null;
+        } else {
+            log.info("non-eternal game reported stop!");
         }
     }
 
@@ -117,7 +157,7 @@ public class MatchMaker implements Serializable, PlayerParent {
 
     @Override
     public void remove(HumanPlayer player) {
-        if(player == waitingPlayer) {
+        if (player == waitingPlayer) {
             waitingPlayer = null;
         }
     }

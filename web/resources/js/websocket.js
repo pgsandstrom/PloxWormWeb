@@ -9,7 +9,7 @@ define(["jquery", "jquery-ui-1.10.2.custom.min", "log"],
 
                 var ws;
 
-                websocket.webSocketInit = function webSocketInit() {
+                websocket.webSocketInit = function webSocketInit(sendGameRequestOnOpen) {
                     if ("WebSocket" in window) {
                         window.ploxworm.log("Opening websocket");
 
@@ -18,8 +18,10 @@ define(["jquery", "jquery-ui-1.10.2.custom.min", "log"],
                         ws = new WebSocket(webSocketUrl);
 
                         ws.onopen = function () {
-                            window.ploxworm.log("Connection open!");
-                            sendGameRequest();
+                            window.ploxworm.log("Connection open: " + sendGameRequestOnOpen);
+                            if (sendGameRequestOnOpen) {
+                                sendGameRequest();
+                            }
                         };
 
                         var messageTypeMapper = {
@@ -61,14 +63,14 @@ define(["jquery", "jquery-ui-1.10.2.custom.min", "log"],
                     }
                 };
 
-                websocket.prepareGame = function prepareGame() {
+                websocket.prepareGame = function prepareGame(sendGameRequestOnOpen) {
                     if (!ws || ws.readyState !== 1) {
                         if (ws) {
                             window.ploxworm.log("websocket readystate: " + ws.readyState);
                         } else {
                             window.ploxworm.log("websocket: " + ws);
                         }
-                        websocket.webSocketInit();
+                        websocket.webSocketInit(sendGameRequestOnOpen);
                     } else {
                         sendGameRequest();
                     }

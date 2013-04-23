@@ -47,24 +47,29 @@ public class BoardManager {
         }
 
         //XXX someday this must be made much more flexible, to allow like 3 humans vs 1 cpu etc
-        Worm player1Worm = new HumanWorm(core, 0, board.getStartPositionList().get(0));
+        Worm player1Worm = new HumanWorm(core,  board.getStartPositionList().get(0));
         board.addWorm(player1Worm);
         switch (type) {
+            case ETERNAL:
+                //TODO add two computers
+                board.setAppleEatGoal(Integer.MAX_VALUE / 2);
+                break;
             case SINGLE:
                 break;
             case VS_CPU:
-                Worm cpuWorm = new StupidWorm(core, 1, board.getStartPositionList().get(1));
+                Worm cpuWorm = new StupidWorm(core,  board.getStartPositionList().get(1));
                 board.addWorm(cpuWorm);
-
-                board.setAppleEatGoal(999);
+                board.setAppleEatGoal(Integer.MAX_VALUE / 2);
                 break;
             case MULTI:
-                Worm player2Worm = new HumanWorm(core, 0, board.getStartPositionList().get(1));
+                Worm player2Worm = new HumanWorm(core, board.getStartPositionList().get(1));
                 board.addWorm(player2Worm);
-
-                board.setAppleEatGoal(999);
+                board.setAppleEatGoal(Integer.MAX_VALUE / 2);
                 break;
+            default:
+                throw new IllegalStateException();
         }
+        board.setType(type);
 
         for (Worm worm : board.getWormList()) {
             worm.init(board);
@@ -93,8 +98,10 @@ public class BoardManager {
         appleList.add(new Apple(false, 600, 600));
 
         //startPositions:
-        startPositionList.add(new StartPosition(400, 400, 1, 1));
-        startPositionList.add(new StartPosition(600, 600, 1, 1));
+        startPositionList.add(new StartPosition(200, 400, 1, 1));
+        startPositionList.add(new StartPosition(600, 400, 1, 1));
+        startPositionList.add(new StartPosition(400, 200, 1, 1));
+        startPositionList.add(new StartPosition(400, 600, 1, 1));
 
         return new Board(core, title, obstacleList, appleList, xSize, ySize, appleEatGoal, appleVisibleAtOnce,
                 startPositionList);

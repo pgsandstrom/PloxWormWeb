@@ -11,8 +11,8 @@ public abstract class ComputerWorm extends Worm {
     protected static final String TAG = "ComputerWorm";
 
     // can be long, time to check is trivial
-    protected static final float[] AI_APPLE_CHECKS = new float[] { 10, 30, 60, 100, 133, 166, 200, 233, 266, 300 };
-    protected static final float[] AI_CRASH_CHECKS = new float[] { 10, 30, 60, 100 }; // cant be long... not as trivial
+    protected static final float[] AI_APPLE_CHECKS = new float[]{10, 30, 60, 100, 133, 166, 200, 233, 266, 300};
+    protected static final float[] AI_CRASH_CHECKS = new float[]{10, 30, 60, 100}; // cant be long... not as trivial
 
     protected static final int DIRECTION_STRAIGHT = 0;
     protected static final int DIRECTION_EITHER = 0; // this is a direction for currentCrisisDecision in case it dont
@@ -30,10 +30,9 @@ public abstract class ComputerWorm extends Worm {
 
     protected Random random;
 
-    public ComputerWorm(Core core, int color, StartPosition startPosition) {
-        super(core, color, startPosition);
+    public ComputerWorm(Core core, StartPosition startPosition) {
+        super(core, startPosition);
         random = new Random();
-//		if (Constant.DEBUG) Log.d(TAG, "ComputerWorm created");
     }
 
     protected int isHeadingForCrash() {
@@ -67,7 +66,6 @@ public abstract class ComputerWorm extends Worm {
 
         Line line;
         for (float length : AI_CRASH_CHECKS) {
-            // if (Constant.DEBUG) Log.d(TAG, "length: " + length);
             boolean crashStraight = false;
             boolean crashLeft = false;
             boolean crashRight = false;
@@ -76,7 +74,6 @@ public abstract class ComputerWorm extends Worm {
             yForce = rightYforce;
             line = makeLine(length, false);
             if (isLineColliding(line)) {
-                // if (Constant.DEBUG) Log.d(TAG, "crashRight");
                 crashRight = true;
             }
 
@@ -84,7 +81,6 @@ public abstract class ComputerWorm extends Worm {
             yForce = leftYforce;
             line = makeLine(length, false);
             if (isLineColliding(line)) {
-                // if (Constant.DEBUG) Log.d(TAG, "crashLeft");
                 crashLeft = true;
             }
 
@@ -92,7 +88,6 @@ public abstract class ComputerWorm extends Worm {
             yForce = currentYforce;
             line = makeLine(length, false);
             if (isLineColliding(line)) {
-                // if (Constant.DEBUG) Log.d(TAG, "crashStraight");
                 crashStraight = true;
             }
 
@@ -128,7 +123,6 @@ public abstract class ComputerWorm extends Worm {
         for (float distance : AI_APPLE_CHECKS) {
             Line line = makeLine(distance, false);
             if (checkAppleEating(line) != null) {
-                // if (Constant.DEBUG) Log.d(TAG, "is heading for apple!");
                 return true;
             }
         }
@@ -136,7 +130,6 @@ public abstract class ComputerWorm extends Worm {
     }
 
     protected void turnLeft(boolean crisis) {
-        // if (Constant.DEBUG) Log.d(TAG, "turnLeft: " + crisis);
         float wormDegree = (float) Math.atan2(yForce, xForce);
         if (wormDegree < 0) {
             wormDegree += Math.PI * 2;
@@ -155,7 +148,6 @@ public abstract class ComputerWorm extends Worm {
     }
 
     protected void turnRight(boolean crisis) {
-        // if (Constant.DEBUG) Log.d(TAG, "turnRight: " + crisis);
         float wormDegree = (float) Math.atan2(yForce, xForce);
         if (wormDegree < 0) {
             wormDegree += Math.PI * 2;
@@ -174,7 +166,6 @@ public abstract class ComputerWorm extends Worm {
     }
 
     protected void goStraight() {
-        // if (Constant.DEBUG) Log.d(TAG, "goStraight");
         currentDecision = DIRECTION_STRAIGHT;
         currentCrisisDecision = DIRECTION_EITHER;
     }

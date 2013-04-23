@@ -147,7 +147,7 @@
 {
 	type: match_request
 	data : {
-		game_type : single / vs_cpu / multi
+		game_type : eternal / single / vs_cpu / multi
 		level: 1
 		player_name: "name"
 		winning_message: "ägd!"

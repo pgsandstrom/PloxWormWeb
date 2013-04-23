@@ -8,8 +8,8 @@ public class StupidWorm extends ComputerWorm {
 
     protected static final String TAG = "StupidWorm";
 
-    public StupidWorm(Core core, int color, StartPosition startPosition) {
-        super(core, color, startPosition);
+    public StupidWorm(Core core, StartPosition startPosition) {
+        super(core, startPosition);
     }
 
     @Override
@@ -18,7 +18,6 @@ public class StupidWorm extends ComputerWorm {
         int headingForCrash = isHeadingForCrash();
 
         if (headingForCrash != CRASH_NEITHER) {
-//			if (Constant.DEBUG) Log.d(TAG, "headingForCrash!");
             if (headingForCrash == CRASH_LEFT) {
                 turnRight(true);
                 return;

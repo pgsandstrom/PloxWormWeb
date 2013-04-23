@@ -26,14 +26,11 @@ public abstract class Worm {
     protected static final float SPEED = 10;
     protected static final float MAX_DEGREE_TURN = 0.3f;
 
-    Core core;
+    protected Core core;
 
-    //is actually just a number, like 0,1,2
-    public final int color;
+    private int maxLength;
 
-    int maxLength;
-
-    StartPosition startPosition;
+    private StartPosition startPosition;
 
     //positions
     public double xPos;
@@ -46,8 +43,8 @@ public abstract class Worm {
     public double yForce;
 
     //board size
-    float boardSizeX;
-    float boardSizeY;
+    private float boardSizeX;
+    private float boardSizeY;
 
     public Board board;
     public final List<Line> lineList;
@@ -59,10 +56,9 @@ public abstract class Worm {
 
     int playerNumber;
 
-    public Worm(Core core, int color, StartPosition startPosition) {
+    public Worm(Core core, StartPosition startPosition) {
 
         this.core = core;
-        this.color = color;
 
         this.startPosition = startPosition;
 
@@ -83,7 +79,6 @@ public abstract class Worm {
         this.appleList = board.getApples();
         boardSizeX = board.getXSize();
         boardSizeY = board.getYSize();
-//		if (Constant.DEBUG) Log.d(TAG, "obstacleList:" + obstacleList.size());
     }
 
     public List<Line> getLineList() {
@@ -139,7 +134,6 @@ public abstract class Worm {
         //compare to fruits:
         for (Apple apple : appleList) {
             if (apple.exists && apple.isCollide(newLine)) {
-                //				if (Constant.DEBUG) Log.d(TAG, "BAM ON APPLE!");
                 return apple;
             }
         }
@@ -320,5 +314,9 @@ public abstract class Worm {
 
     public void setPlayerNumber(int playerNumber) {
         this.playerNumber = playerNumber;
+    }
+
+    public void setStartPosition(StartPosition startPosition) {
+        this.startPosition = startPosition;
     }
 }

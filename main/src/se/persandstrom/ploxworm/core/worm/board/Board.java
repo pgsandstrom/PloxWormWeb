@@ -12,9 +12,10 @@ public class Board {
 
     protected static final String TAG = "Board";
 
-    Random random;
+    private final Random random;
 
     private final Core core;
+    private BoardType type;
 
     public final String title;
 
@@ -71,10 +72,6 @@ public class Board {
         return wormList;
     }
 
-    public List<HumanWorm> getHumanWormList() {
-        return humanWormList;
-    }
-
     public List<Obstacle> getObstacles() {
         return obstacleList;
     }
@@ -92,7 +89,6 @@ public class Board {
     }
 
     public void ateApple(Worm worm, Apple eatenApple) {
-        //		if (Constant.DEBUG) Log.d(TAG, "ateApple:" + eatenApple.positionX);
 
         if (!worm.isAi() && eatenApple.isGold) {
             core.victory(worm);
@@ -104,13 +100,10 @@ public class Board {
 
         while (true) {
             int randomNumber = random.nextInt(appleList.size());
-            //			if (Constant.DEBUG) Log.d(TAG, "randomNumber:" + randomNumber);
             Apple apple = appleList.get(randomNumber);
-            //			if (Constant.DEBUG) Log.d(TAG, "apple:" + apple.positionX);
 
             //check so the apple does not exist, and also that it is not the apple that was just eaten
             if (!apple.exists) {
-//				if (Constant.DEBUG) Log.d(TAG, "adding apple:" + apple.positionX);
                 apple.exists = true;
                 if (!hasPlacedGoldApple && applesEaten >= appleEatGoal) {
                     apple.isGold = true;
@@ -127,5 +120,13 @@ public class Board {
 
     public int getYSize() {
         return ySize;
+    }
+
+    public BoardType getType() {
+        return type;
+    }
+
+    public void setType(BoardType type) {
+        this.type = type;
     }
 }

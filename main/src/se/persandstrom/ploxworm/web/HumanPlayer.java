@@ -37,8 +37,9 @@ public class HumanPlayer extends Player {
         try {
             ws.send(message);
         } catch (IOException e) {
-            log.debug("IOException: Player disconnected!");
+            log.debug("IOException: disconnected!");
             disconnected();
+//            e.printStackTrace();
         }
     }
 
@@ -52,11 +53,17 @@ public class HumanPlayer extends Player {
     }
 
     public void disconnected() {
-        connected = false;
-        parent.remove(this);
+        synchronized (this) {   //to prevent multiple disconnect-messages
+            if (connected) {
+                connected = false;
+                parent.remove(this);
+                log.debug("removing player, disconnected from " + parent.getClass().getName());
+            }
+        }
     }
 
     public void open() {
+        log.debug("player connection open!");
         connected = true;
         parent.open(this);
     }

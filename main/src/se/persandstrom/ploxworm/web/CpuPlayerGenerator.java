@@ -12,17 +12,17 @@ public class CpuPlayerGenerator {
     private final Set<CpuPlayer> playerPool = new LinkedHashSet<CpuPlayer>();
     {
         CpuPlayer cpu1 = new CpuPlayer();
-        cpu1.setName("Bob");
+        cpu1.setName("Bob (cpu)");
         cpu1.setWinningMessage("Bob is the LORD!");
         playerPool.add(cpu1);
 
         CpuPlayer cpu2 = new CpuPlayer();
-        cpu2.setName("Anny");
+        cpu2.setName("Anny (cpu)");
         cpu2.setWinningMessage("aaannypanny!");
         playerPool.add(cpu2);
 
         CpuPlayer cpu3 = new CpuPlayer();
-        cpu3.setName("Charles");
+        cpu3.setName("Charles (cpu)");
         cpu3.setWinningMessage("Sir Charles rules all!");
         playerPool.add(cpu3);
     }

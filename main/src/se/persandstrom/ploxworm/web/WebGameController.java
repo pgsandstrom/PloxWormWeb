@@ -9,8 +9,10 @@ import se.persandstrom.ploxworm.core.GameController;
 import se.persandstrom.ploxworm.core.Line;
 import se.persandstrom.ploxworm.core.worm.HumanWorm;
 import se.persandstrom.ploxworm.core.worm.Worm;
+import se.persandstrom.ploxworm.core.worm.ai.StupidWorm;
 import se.persandstrom.ploxworm.core.worm.board.Apple;
 import se.persandstrom.ploxworm.core.worm.board.Board;
+import se.persandstrom.ploxworm.core.worm.board.StartPosition;
 import se.persandstrom.ploxworm.web.api.ApiObjectFactory;
 import se.persandstrom.ploxworm.web.api.objects.*;
 
@@ -28,8 +30,8 @@ public class WebGameController implements GameController {
     private final ApiObjectFactory apiObjectFactory = new ApiObjectFactory();
 
     private Core core;
-    private final HumanPlayer[] humanPlayerArray;
-    private final float[][] humanPlayerAcceleration;
+    private final List<HumanPlayer> humanPlayerList;
+    private final Map<Worm, Float[]> humanPlayerAcceleration;
 
     private List<Player> playerList = new ArrayList<Player>();
 
@@ -37,18 +39,21 @@ public class WebGameController implements GameController {
     private final Map<Player, Worm> playerToWorm = new HashMap<Player, Worm>();
     private final Map<Worm, Player> wormToPlayer = new HashMap<Worm, Player>();
 
+    private int highestPlayerNumber;
+
     public WebGameController(InitHolder initHolder, HumanPlayer player) {
-        humanPlayerArray = new HumanPlayer[]{player};
-        humanPlayerAcceleration = new float[humanPlayerArray.length][2];
+        humanPlayerList = new ArrayList<HumanPlayer>();
+        humanPlayerList.add(player);
+        humanPlayerAcceleration = new HashMap<Worm, Float[]>();
         this.initHolder = initHolder;
     }
 
-    public WebGameController(InitHolder initHolder, HumanPlayer[] humanPlayerArray) {
-        this.humanPlayerArray = humanPlayerArray;
-        humanPlayerAcceleration = new float[this.humanPlayerArray.length][2];
+    public WebGameController(InitHolder initHolder, List<HumanPlayer> humanPlayerList) {
+        this.humanPlayerList = humanPlayerList;
+        humanPlayerAcceleration = new HashMap<Worm, Float[]>();
         this.initHolder = initHolder;
 
-        for (Player player : humanPlayerArray) {
+        for (Player player : humanPlayerList) {
             if (player == null) {
                 throw new IllegalArgumentException("a player was null");
             }
@@ -61,12 +66,22 @@ public class WebGameController implements GameController {
 
     @Override
     public float getXacc(HumanWorm worm) {
-        return humanPlayerAcceleration[worm.getPlayerNumber()][0];
+        Float xAcc = humanPlayerAcceleration.get(worm)[0];
+        if (xAcc == null) {
+            return 0;
+        } else {
+            return xAcc;
+        }
     }
 
     @Override
     public float getYacc(HumanWorm worm) {
-        return humanPlayerAcceleration[worm.getPlayerNumber()][1];
+        Float yAcc = humanPlayerAcceleration.get(worm)[1];
+        if (yAcc == null) {
+            return 0;
+        } else {
+            return yAcc;
+        }
     }
 
     @Override
@@ -80,8 +95,11 @@ public class WebGameController implements GameController {
     }
 
     public void setAcc(int playerNumber, float xAcc, float yAcc) {
-        humanPlayerAcceleration[playerNumber][0] = xAcc;
-        humanPlayerAcceleration[playerNumber][1] = yAcc;
+        Player player = playerNumberToPlayer.get(playerNumber);
+        Worm worm = playerToWorm.get(player);
+        Float[] floats = humanPlayerAcceleration.get(worm);
+        floats[0] = xAcc;
+        floats[1] = yAcc;
     }
 
     @Override
@@ -128,42 +146,110 @@ public class WebGameController implements GameController {
 
 
         //Set up all players, human and cpu:
-        List<Worm> humanWormList = board.getWormList();
+        List<Worm> wormList = board.getWormList();
         CpuPlayerGenerator cpuPlayerGenerator = new CpuPlayerGenerator();
         int humanIndex = 0;
-        for (int wormIndex = 0; wormIndex < humanWormList.size(); wormIndex++) {
-            Worm worm = humanWormList.get(wormIndex);
+        for (int wormIndex = 0; wormIndex < wormList.size(); wormIndex++) {
+            Worm worm = wormList.get(wormIndex);
             Player player;
             if (!worm.isAi()) {
-                player = humanPlayerArray[humanIndex];
+                player = humanPlayerList.get(humanIndex);
                 humanIndex++;
             } else {
                 player = cpuPlayerGenerator.get();
             }
 
-            player.setPlayerNumber(wormIndex);
-            worm.setPlayerNumber(wormIndex);
-
-            wormToPlayer.put(worm, player);
-            playerToWorm.put(player, worm);
-            playerNumberToPlayer.put(player.getPlayerNumber(), player);
-
-            playerList.add(player);
+            addPlayerData(player, worm, wormIndex);
         }
 
         //complete the match object:
+        Match match = getMatchObject(board);
+
+        //send the match:
+        for (HumanPlayer humanPlayer : humanPlayerList) {
+            match.setYourNumber(humanPlayer.getPlayerNumber());
+            sendToPlayer(humanPlayer, apiObjectFactory.createApiObject(match));
+        }
+    }
+
+    @Override
+    public void addPlayer(Player player) {
+        synchronized (this) {
+            //add his worm:
+            StartPosition startposition = core.getRandomStartposition();
+            Worm worm;
+            if (player instanceof HumanPlayer) {
+                worm = new HumanWorm(core, startposition);
+            } else if (player instanceof CpuPlayer) {
+                worm = new StupidWorm(core, startposition);
+            } else {
+                throw new IllegalStateException("wtf is that player???");
+            }
+
+            highestPlayerNumber++;
+            addPlayerData(player, worm, highestPlayerNumber);
+
+            core.addWorm(worm);
+
+            if (player instanceof HumanPlayer) {
+                log.debug("adding to human player list");
+                humanPlayerList.add((HumanPlayer) player);
+            }
+
+            if (player instanceof HumanPlayer) {
+                Match match = getMatchObject(core.getBoard());
+                match.setYourNumber(player.getPlayerNumber());
+                sendToPlayer((HumanPlayer) player, apiObjectFactory.createApiObject(match));
+            }
+        }
+    }
+
+    private Match getMatchObject(Board board) {
         Match match = new Match(board.getXSize(), board.getYSize(), board.getObstacles());
         List<PlayerDto> playerDtoList = new ArrayList<PlayerDto>();
         for (Player player : playerList) {
             playerDtoList.add(new PlayerDto(player));
         }
         match.setPlayers(playerDtoList);
+        return match;
+    }
 
-        //send the match:
-        for (HumanPlayer humanPlayer : humanPlayerArray) {
-            match.setYourNumber(humanPlayer.getPlayerNumber());
-            sendToPlayer(humanPlayer, apiObjectFactory.createApiObject(match));
+    @Override
+    public boolean removePlayer(Player player) {
+        Worm worm = playerToWorm.get(player);
+        boolean endGame = core.death(worm, false);
+        log.debug("removePlayer. endGame: " + endGame);
+
+        playerToWorm.remove(player);
+        wormToPlayer.remove(worm);
+        playerNumberToPlayer.remove(player.getPlayerNumber());
+        humanPlayerAcceleration.remove(worm);
+
+        playerList.remove(player);
+
+        if (player instanceof HumanPlayer) {
+            log.debug("removing from human player list");
+            boolean removed = humanPlayerList.remove(player);
+            if (!removed) {
+                log.error("well, removing failed...");
+            }
         }
+
+        return endGame;
+    }
+
+    private void addPlayerData(Player player, Worm worm, int playerNumber) {
+        player.setPlayerNumber(playerNumber);
+        highestPlayerNumber = Math.max(highestPlayerNumber, playerNumber);
+        worm.setPlayerNumber(playerNumber);
+
+        wormToPlayer.put(worm, player);
+        playerToWorm.put(player, worm);
+        playerNumberToPlayer.put(player.getPlayerNumber(), player);
+
+        humanPlayerAcceleration.put(worm, new Float[2]);
+
+        playerList.add(player);
     }
 
     @Override
@@ -253,7 +339,7 @@ public class WebGameController implements GameController {
 
     private void sendToAll(JsonElement apiObject) {
         String string = apiObject.toString();
-        for (HumanPlayer player : humanPlayerArray) {
+        for (HumanPlayer player : humanPlayerList) {
             player.send(string);
         }
     }
