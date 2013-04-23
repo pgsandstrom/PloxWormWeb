@@ -31,6 +31,9 @@ require(["jquery", "websocket"],
 
             var gameRunning = false;
 
+            //set player name:
+            $("#player_name").val("Anonymous " + Math.floor(Math.random() * 1000));
+
             $("#start-game").click(function () {
                 websocket.prepareGame();
             });
