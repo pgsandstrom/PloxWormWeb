@@ -141,6 +141,7 @@ public class MatchMaker implements Serializable, PlayerParent {
     @Override
     public void received(HumanPlayer player, JsonObject message) {
         //NOT IMPLEMENTED
+        log.debug("received wrong class: " + apiObjectFactory.getType(message));
     }
 
     @Override

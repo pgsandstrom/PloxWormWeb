@@ -10,7 +10,7 @@ import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
 
-@Named("matchMaker")
+@Named("eternalGameHolder")
 @ApplicationScoped
 public class EternalGameHolder {
 
@@ -77,7 +77,9 @@ public class EternalGameHolder {
 
     public void removeObserver(HumanPlayer player) {
         synchronized (eternalGameLock) {
-            eternalGame.removeObserver(player);
+            if (eternalGame != null) {
+                eternalGame.removeObserver(player);
+            }
         }
     }
 }

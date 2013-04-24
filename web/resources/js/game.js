@@ -3,12 +3,13 @@ require(["jquery", "websocket"],
     function (jquery, websocketConstructor) {
         "use strict";
 
+        //TODO disable "start game"-button while in a game
+
         var game = function () {
 
             var APPLE_RADIUS = 20;
 
-            //XXX more awesome colors
-            var WORM_COLORS = ['Chartreuse', 'Darkorange', 'blue'];
+            var WORM_COLORS = ['Chartreuse', 'Darkorange', 'Blue', 'Aqua', 'DarkSeaGreen', 'HotPink', 'Khaki', 'Linen'];
 
             var $messages = $("#messages");
             var $title = $("#title");
@@ -29,7 +30,7 @@ require(["jquery", "websocket"],
             var scaleX = 1;
             var scaleY = 1;
 
-            var gameRunning = false;
+            game.gameRunning = false;
 
             //set player name:
             $("#player_name").val("Anonymous " + Math.floor(Math.random() * 1000));
@@ -55,18 +56,27 @@ require(["jquery", "websocket"],
             };
 
             game.startGame = function startGame(data) {
-                saveMatchData(data);
-                gameRunning = true;
-                startSendingPosition();
+                var yourPlayerNumber = saveMatchData(data);
+                console.log("startGame. Player number: " + yourPlayerNumber);
+                game.gameRunning = true;
+                if (yourPlayerNumber !== -1) {
+                    startSendingPosition();
+                }
                 if (inQueue) {
                     playSound("3beeps");
                     inQueue = false;
                 }
             };
 
+            /**
+             *
+             * @param jsonData
+             * @returns your player number (-1 if observer)
+             */
             function saveMatchData(jsonData) {
                 match = jsonData;
                 game.render(null);
+                return match.your_number;
             }
 
             game.render = function render(jsonData) {
@@ -100,28 +110,31 @@ require(["jquery", "websocket"],
                         if (worms) {
                             $.each(worms, function (wormIndex, value) {
                                 context.beginPath();
-                                var lines = this;
+                                var playerNumber = this.player_number;
+                                var lines = this.lines;
                                 var lastX;
                                 var lastY;
-                                $.each(this, function (index) {
+                                $.each(lines, function (lineIndex) {
                                     // move context if this is the first step or if we just crossed a border
-                                    if (index === 0 || Math.abs(lastX - this.x) > 20 || Math.abs(lastY - this.y) > 20) {
+                                    if (lineIndex === 0 || Math.abs(lastX - this.x) > 20 || Math.abs(lastY - this.y) > 20) {
                                         context.moveTo(this.x * scaleX, this.y * scaleY);
                                     } else {
                                         context.lineTo(this.x * scaleX, this.y * scaleY);
                                     }
 
-                                    if (index + 1 === lines.length && wormIndex === match.your_number) {
+                                    //save the position of the head
+                                    if (lineIndex + 1 === lines.length && playerNumber === match.your_number) {
                                         headX = this.x * scaleX;
                                         headY = this.y * scaleY;
                                     }
+
                                     lastX = this.x;
                                     lastY = this.y;
                                 });
-                                if (wormIndex === match.your_number) {
+                                if (playerNumber === match.your_number) {
                                     context.strokeStyle = 'black';
                                 } else {
-                                    context.strokeStyle = WORM_COLORS[wormIndex];
+                                    context.strokeStyle = WORM_COLORS[playerNumber];
                                 }
                                 context.stroke();
                             });
@@ -197,7 +210,7 @@ require(["jquery", "websocket"],
 
             game.endRound = function endRound(data) {
                 window.ploxworm.log("Game ended!");
-                gameRunning = false;
+                game.gameRunning = false;
                 if (match.your_number === data.winner_number) {
                     game.showTitleString("YOU WON!");
                 } else {
@@ -273,18 +286,19 @@ require(["jquery", "websocket"],
             });
 
             function startSendingPosition() {
+                console.log("startSendingPosition");
                 setTimeout(updateWormDirection, 50);
 
                 function updateWormDirection() {
-//                console.log('updateWormDirection');
                     var x = mouseX - headX;
                     var y = mouseY - headY;
 
                     if (!isNaN(x) && !isNaN(y)) {
+                        console.log("updateWormDirection");
                         websocket.sendPosition(x, y, scaleX, scaleY);
                     }
 
-                    if (gameRunning) {
+                    if (game.gameRunning) {
                         setTimeout(updateWormDirection, 50);
                     }
                 }

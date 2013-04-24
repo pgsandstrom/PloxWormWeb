@@ -94,7 +94,11 @@ public class Core {
         gameController.setNewBoard(board);
         gameController.showTitle(board.title);
 
-        new StartCountDownThread().start();
+        if (aliveHumanCount > 0) {
+            new StartCountDownThread().start();
+        } else {
+            go();
+        }
     }
 
     public void addWorm(Worm worm) {
@@ -142,6 +146,8 @@ public class Core {
         }
         gameThread = new GameThread();
         gameThread.start();
+
+        gameController.updateScore(wormList);
     }
 
     public void stop() {
@@ -168,26 +174,25 @@ public class Core {
         }
 
         log.debug("death. AliveHumanCount: " + aliveHumanCount);
+        log.debug("AliveAiCount: " + aliveAiCount + ", observers: " + gameController.getObserverCount());
 
+        gameController.updateScore(wormList);
         deadWorm.isAlive = false;
 
         boolean endGame = false;
 
-        //observers + computers means we never quit the game
-        if (gameController.getObserverCount() == 0 || aliveAiCount > 0) {
 
-            if (board.getType() == BoardType.ETERNAL) {
-                endGame = aliveHumanCount == 0;
-            } else if ((!deadWorm.isAi() && aliveHumanCount == 1)) {
-                //human died, only one human left
-                endGame = true;
-            } else if ((!deadWorm.isAi() && aliveHumanCount == 0)) {
-                //human died, no humans left
-                endGame = true;
-            } else if (deadWorm.isAi() && aliveAiCount == 0 && aliveHumanCount == 1) {
-                //ai died, a human is all that is left
+        if (board.getType() == BoardType.ETERNAL) {
+            //eternal game ends only when all observers and players are gone
+            if (gameController.getObserverCount() == 0 && aliveHumanCount == 0) {
                 endGame = true;
             }
+        }else if(aliveHumanCount == 0) {
+            //death and no human left? Bam, exit.
+            endGame = true;
+        } else if (aliveHumanCount == 1 && aliveAiCount == 0) {
+            //death and only one human left? EXIT TIME!
+            endGame = true;
         }
 
 

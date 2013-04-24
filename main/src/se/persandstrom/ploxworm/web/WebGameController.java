@@ -209,11 +209,9 @@ public class WebGameController implements GameController {
             core.addWorm(worm);
 
             if (player instanceof HumanPlayer) {
-                log.debug("adding to human player list");
+                log.debug("adding as human player");
                 humanPlayerList.add((HumanPlayer) player);
-            }
 
-            if (player instanceof HumanPlayer) {
                 Match match = getMatchObject(core.getBoard());
                 match.setYourNumber(player.getPlayerNumber());
                 sendToPlayer((HumanPlayer) player, apiObjectFactory.createApiObject(match));
@@ -282,8 +280,14 @@ public class WebGameController implements GameController {
         List<Worm> wormList = core.getWormList();
         for (int wormNumber = 0; wormNumber < wormList.size(); wormNumber++) {
             Worm worm = wormList.get(wormNumber);
+
+            JsonObject wormObject = new JsonObject();
+            wormArray.add(wormObject);
+
+            wormObject.addProperty("player_number", worm.getPlayerNumber());
+
             JsonArray lineArray = new JsonArray();
-            wormArray.add(lineArray);
+            wormObject.add("lines", lineArray);
 
             List<Line> lineList = worm.getLineList();
             for (int lineNumber = 0; lineNumber < lineList.size(); lineNumber++) {

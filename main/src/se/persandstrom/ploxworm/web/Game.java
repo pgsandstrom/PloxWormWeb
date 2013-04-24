@@ -59,7 +59,7 @@ public class Game implements PlayerParent {
         if ("direction".equals(type)) {
             gameController.setAcc(playerNumber, data.get("x").getAsFloat(), data.get("y").getAsFloat());
         } else {
-            log.debug("Game unknown type: " + type);
+            log.debug("received wrong class: " + type);
         }
     }
 
