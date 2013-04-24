@@ -1,3 +1,5 @@
 - Fix highscore
+- Chat
+- Lobby, like showing where people are etc
 - Optimize: Let scoreboard etc piggyback on the frames?
 - Optimize: Only send the changes on the board, not the entire worm each frame. This would however be really inefficient if the entire game is happening on an android device or something, so low prio here...
