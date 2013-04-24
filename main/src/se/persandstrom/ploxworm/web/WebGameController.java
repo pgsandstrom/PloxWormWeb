@@ -19,11 +19,14 @@ import se.persandstrom.ploxworm.web.api.objects.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Connects the game core with the players. Also holds CpuPlayers.
+ */
 public class WebGameController implements GameController {
 
     static Logger log = Logger.getLogger(WebGameController.class.getName());
 
-    InitHolder initHolder;
+    private final InitHolder initHolder;
 
     private final ApiObjectFactory apiObjectFactory = new ApiObjectFactory();
 
@@ -31,13 +34,22 @@ public class WebGameController implements GameController {
     private final List<HumanPlayer> humanPlayerList;
     private final Map<Worm, Float[]> humanPlayerAcceleration;
 
-    private final List<Player> playerList = Collections.synchronizedList(new ArrayList<Player>());
+    //it might change often, so use synchronizedList:
+    private final List<HumanPlayer> observerList = Collections.synchronizedList(new ArrayList<HumanPlayer>());
+
+    private final List<Player> playerList = new CopyOnWriteArrayList<Player>();
 
     private final Map<Integer, Player> playerNumberToPlayer = new HashMap<Integer, Player>();
     private final Map<Player, Worm> playerToWorm = new HashMap<Player, Worm>();
     private final Map<Worm, Player> wormToPlayer = new HashMap<Worm, Player>();
 
     private int highestPlayerNumber;
+
+    public WebGameController(InitHolder initHolder) {
+        humanPlayerList = new CopyOnWriteArrayList<HumanPlayer>();
+        humanPlayerAcceleration = new HashMap<Worm, Float[]>();
+        this.initHolder = initHolder;
+    }
 
     public WebGameController(InitHolder initHolder, HumanPlayer player) {
         humanPlayerList = new CopyOnWriteArrayList<HumanPlayer>();
@@ -107,7 +119,7 @@ public class WebGameController implements GameController {
         ScoreBoard scoreBoard = new ScoreBoard();
         for (Worm worm : wormList) {
             Player player = wormToPlayer.get(worm);
-            if(player == null){
+            if (player == null) {
                 log.error("player was null, skipping");
                 continue;
             }
@@ -349,10 +361,38 @@ public class WebGameController implements GameController {
         for (HumanPlayer player : humanPlayerList) {
             player.send(string);
         }
+
+        for (HumanPlayer player : observerList) {
+            player.send(string);
+        }
     }
 
     private void sendToPlayer(HumanPlayer player, JsonElement apiObject) {
         player.send(apiObject.toString());
+    }
+
+    @Override
+    public void addObserver(HumanPlayer player) {
+        Match match = getMatchObject(core.getBoard());
+        match.setYourNumber(-1);
+        sendToPlayer(player, apiObjectFactory.createApiObject(match));
+        observerList.add(player);
+    }
+
+    @Override
+    public boolean removeObserver(HumanPlayer player) {
+        observerList.remove(player);
+        if (getObserverCount() == 0 && core.getAliveHumanCount() == 0) {
+            core.stop();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int getObserverCount() {
+        return observerList.size();
     }
 
 }

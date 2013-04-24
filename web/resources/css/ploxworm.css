@@ -57,8 +57,7 @@ body {
     float: left;
 }
 
-/*TODO make messages look not fucked up*/
-/*TODO also make it not steal focus...*/
+/*TODO can we make so messages don't steal focus from the canvas?*/
 
 #messages {
     width: 800px;

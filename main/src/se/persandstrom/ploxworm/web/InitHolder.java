@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Holds the websockets while they open and make a game request
+ * Holds the players while the websocket is opened and the player makes a game request
  */
 @Named("initHolder")
 @ApplicationScoped
@@ -25,6 +25,9 @@ public class InitHolder implements PlayerParent {
 
     @Inject
     MatchMaker matchMaker;
+
+    @Inject
+    EternalGameHolder eternalGameHolder;
 
     Set<Player> playerSet = new HashSet<Player>();
 
@@ -39,7 +42,6 @@ public class InitHolder implements PlayerParent {
 
         if (typeClass == MatchRequest.class) {
             MatchRequest matchRequest = apiObjectFactory.getApiObject(message, MatchRequest.class);
-            //TODO synchronize?
             playerSet.remove(player);
             matchMaker.addPlayer(player, matchRequest);
         } else {
@@ -52,12 +54,13 @@ public class InitHolder implements PlayerParent {
     public void remove(HumanPlayer player) {
         log.debug("Player removed from InitHolder");
         playerSet.remove(player);
+
+        eternalGameHolder.removeObserver(player);
+        //TODO fix the whole issue with adding cpu dynamically and stuff
     }
 
     @Override
     public void open(HumanPlayer player) {
-        //do nothing until they request a game
-//        playerSet.remove(player);
-//        matchMaker.addPlayer(player);
+        eternalGameHolder.addObserver(player);
     }
 }

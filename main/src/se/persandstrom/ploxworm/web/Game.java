@@ -10,9 +10,7 @@ import se.persandstrom.ploxworm.web.api.ApiObjectFactory;
 import java.util.List;
 
 /**
- * User: pesandst
- * Date: 2013-03-15
- * Time: 12:42
+ * Holds the players while they are playing a game
  */
 public class Game implements PlayerParent {
 
@@ -36,10 +34,6 @@ public class Game implements PlayerParent {
             player.setParent(this);
         }
 
-        if(playerList.size() == 0) {
-            throw new IllegalStateException("cant create game without players");
-        }
-
         log.info("Game created. Current player size: " + playerList.size());
     }
 
@@ -55,16 +49,13 @@ public class Game implements PlayerParent {
 
     @Override
     public void received(HumanPlayer player, JsonObject message) {
-
-        int playerNumber = playerList.indexOf(player);
+        int playerNumber = player.getPlayerNumber();
 
         //use this when we got more potential messages
-        Class messageClass = apiObjectFactory.getTypeClass(message);
-
+//        Class messageClass = apiObjectFactory.getTypeClass(message);
 
         String type = message.get("type").getAsString();
         JsonObject data = message.get("data").getAsJsonObject();
-//        log.debug("type: " + type);
         if ("direction".equals(type)) {
             gameController.setAcc(playerNumber, data.get("x").getAsFloat(), data.get("y").getAsFloat());
         } else {
@@ -83,12 +74,24 @@ public class Game implements PlayerParent {
         log.debug("game ended: "+gameEnded);
 
         if (gameEnded) {
-            matchMaker.gamedStopped(this);
+            matchMaker.gameStopped(this);
         }
     }
 
     @Override
     public void open(HumanPlayer player) {
         throw new UnsupportedOperationException("you should already be open you doofus!");
+    }
+
+    public void addObserver(HumanPlayer player) {
+        gameController.addObserver(player);
+    }
+
+    public void removeObserver(HumanPlayer player) {
+        boolean gameStopped = gameController.removeObserver(player);
+        if(gameStopped) {
+            log.debug("game stopped due to observer removed!");
+            matchMaker.gameStopped(this);
+        }
     }
 }

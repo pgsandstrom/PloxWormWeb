@@ -3,7 +3,9 @@ package se.persandstrom.ploxworm.core;
 import se.persandstrom.ploxworm.core.worm.HumanWorm;
 import se.persandstrom.ploxworm.core.worm.Worm;
 import se.persandstrom.ploxworm.core.worm.board.Board;
+import se.persandstrom.ploxworm.web.HumanPlayer;
 import se.persandstrom.ploxworm.web.Player;
+import se.persandstrom.ploxworm.web.api.objects.Match;
 
 import java.util.List;
 
@@ -40,4 +42,15 @@ public interface GameController {
     public boolean removePlayer(Player player);
 
     public void render();
+
+    public void addObserver(HumanPlayer player);
+
+    /**
+     *
+     * @param player
+     * @return if the game was stopped
+     */
+    public boolean removeObserver(HumanPlayer player);
+
+    public int getObserverCount();
 }

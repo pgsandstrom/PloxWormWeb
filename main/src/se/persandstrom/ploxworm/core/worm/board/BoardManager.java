@@ -47,21 +47,25 @@ public class BoardManager {
         }
 
         //XXX someday this must be made much more flexible, to allow like 3 humans vs 1 cpu etc
-        Worm player1Worm = new HumanWorm(core,  board.getStartPositionList().get(0));
-        board.addWorm(player1Worm);
+        Worm player1Worm;
         switch (type) {
             case ETERNAL:
-                //TODO add two computers
                 board.setAppleEatGoal(Integer.MAX_VALUE / 2);
                 break;
             case SINGLE:
+                player1Worm = new HumanWorm(core,  board.getStartPositionList().get(0));
+                board.addWorm(player1Worm);
                 break;
             case VS_CPU:
+                player1Worm = new HumanWorm(core,  board.getStartPositionList().get(0));
+                board.addWorm(player1Worm);
                 Worm cpuWorm = new StupidWorm(core,  board.getStartPositionList().get(1));
                 board.addWorm(cpuWorm);
                 board.setAppleEatGoal(Integer.MAX_VALUE / 2);
                 break;
             case MULTI:
+                player1Worm = new HumanWorm(core,  board.getStartPositionList().get(0));
+                board.addWorm(player1Worm);
                 Worm player2Worm = new HumanWorm(core, board.getStartPositionList().get(1));
                 board.addWorm(player2Worm);
                 board.setAppleEatGoal(Integer.MAX_VALUE / 2);

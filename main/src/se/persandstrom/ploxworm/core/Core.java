@@ -10,6 +10,9 @@ import se.persandstrom.ploxworm.web.MatchMaker;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Holds the game thread and ties all parts of the game together
+ */
 public class Core {
 
     static final String TAG = "Core";
@@ -17,7 +20,7 @@ public class Core {
 
     // point related constants
     private static final int POINTS_APPLE = 50;
-    private static final int POINTS_VICTORY = 500;  //TODO add this when victory happens
+    private static final int POINTS_VICTORY = 500;
 
     private final GameController gameController;
     private final Random random;
@@ -102,7 +105,7 @@ public class Core {
     }
 
     public void removeWorm(Worm worm) {
-        if(worm.isAlive) {
+        if (worm.isAlive) {
             throw new IllegalStateException("kill the worm first");
         }
         board.removeWorm(worm);
@@ -121,6 +124,10 @@ public class Core {
         }
         aliveHumanCount = aliveHumanCountTemp;
         aliveAiCount = aliveAiCountTemp;
+    }
+
+    public int getAliveHumanCount() {
+        return aliveHumanCount;
     }
 
     /**
@@ -166,17 +173,21 @@ public class Core {
 
         boolean endGame = false;
 
-        if (board.getType() == BoardType.ETERNAL) {
-            endGame = aliveHumanCount == 0;
-        } else if ((!deadWorm.isAi() && aliveHumanCount == 1)) {
-            //human died, only one human left
-            endGame = true;
-        } else if ((!deadWorm.isAi() && aliveHumanCount == 0)) {
-            //human died, no humans left
-            endGame = true;
-        } else if (deadWorm.isAi() && aliveAiCount == 0 && aliveHumanCount == 1) {
-            //ai died, a human is all that is left
-            endGame = true;
+        //observers + computers means we never quit the game
+        if (gameController.getObserverCount() == 0 || aliveAiCount > 0) {
+
+            if (board.getType() == BoardType.ETERNAL) {
+                endGame = aliveHumanCount == 0;
+            } else if ((!deadWorm.isAi() && aliveHumanCount == 1)) {
+                //human died, only one human left
+                endGame = true;
+            } else if ((!deadWorm.isAi() && aliveHumanCount == 0)) {
+                //human died, no humans left
+                endGame = true;
+            } else if (deadWorm.isAi() && aliveAiCount == 0 && aliveHumanCount == 1) {
+                //ai died, a human is all that is left
+                endGame = true;
+            }
         }
 
 
@@ -186,20 +197,21 @@ public class Core {
             stop();
 
             //we only support ONE winner...
-            Worm winnerWorm = null;
+            Worm victoryWorm = null;
             for (Worm worm : wormList) {
                 if (worm.isAlive) {
-                    winnerWorm = worm;
+                    victoryWorm = worm;
+                    increaseScore(victoryWorm, POINTS_VICTORY);
                     break;
                 }
             }
 
             for (Worm worm : wormList) {
                 if (!worm.isAi()) {
-                    if (winnerWorm == null) {
+                    if (victoryWorm == null) {
                         gameController.end((HumanWorm) worm, worm.isAlive, false, -1);
-                    } else if (winnerWorm instanceof HumanWorm) {
-                        HumanWorm humanWinner = (HumanWorm) winnerWorm;
+                    } else if (victoryWorm instanceof HumanWorm) {
+                        HumanWorm humanWinner = (HumanWorm) victoryWorm;
                         gameController.end((HumanWorm) worm, worm.isAlive, false, humanWinner.getPlayerNumber());
                     } else {
                         //computer won:
@@ -213,7 +225,11 @@ public class Core {
         }
     }
 
+
     public void victory(Worm victoryWorm) {
+        //WARNING: This is not always called when the game ends or a worm is appointed victor.
+
+        increaseScore(victoryWorm, POINTS_VICTORY);
 
         int winnerPlayerId;
         if (victoryWorm instanceof HumanWorm) {

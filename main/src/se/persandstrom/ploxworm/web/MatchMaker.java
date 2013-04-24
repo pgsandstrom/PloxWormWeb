@@ -16,6 +16,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Holds the players while a game is found for them
+ */
 @Named("matchMaker")
 @ApplicationScoped
 public class MatchMaker implements Serializable, PlayerParent {
@@ -25,25 +28,26 @@ public class MatchMaker implements Serializable, PlayerParent {
     @Inject
     InitHolder initHolder;
 
+    //XXX the logic with removing observers is a bit lame here. I bet there is a better way.
+    @Inject
+    EternalGameHolder eternalGameHolder;
+
     @Inject
     ApiObjectFactory apiObjectFactory;
 
     private final Random random = new Random();
 
-    private final Object eternalGameLock = new Object();
-    private Game eternalGame;
-
     private final Object multiplayerGameLock = new Object();
-    HumanPlayer waitingPlayer;
-    int waitingPlayerLevel;
+    private HumanPlayer waitingPlayer;
+    private int waitingPlayerLevel;
 
     public void addPlayer(HumanPlayer player, MatchRequest matchRequest) {
         player.setName(matchRequest.getPlayerName());
         player.setParent(this);
 
         if (!player.isConnected()) {
-            //TODO
             log.error("wtf player not connected");
+            return;
         }
 
         switch (matchRequest.getGameType()) {
@@ -63,29 +67,12 @@ public class MatchMaker implements Serializable, PlayerParent {
     }
 
     private void startEternalGame(HumanPlayer player) {
-        synchronized (eternalGameLock) {
-            if (eternalGame == null) {
-                WebGameController gameController = new WebGameController(initHolder, player);
-                Core.Builder builder = new Core.Builder(gameController);
-                builder.setEternalGame(true);
-                builder.setLevel(0);
-                builder.setBoardType(BoardType.ETERNAL);
+        Game eternalGame = eternalGameHolder.getEternalGame(true);
+        eternalGame.addPlayer(player);
 
-                List<HumanPlayer> playerList = new ArrayList<HumanPlayer>();
-                playerList.add(player);
-
-                Core core = builder.build();
-                gameController.setCore(core);
-
-                //when a match has been made:
-                eternalGame = new Game(this, playerList, gameController, core);
-                eternalGame.start();
-            } else {
-                log.debug("adding to ongoing eternal game");
-                eternalGame.addPlayer(player);
-            }
-        }
+        eternalGameHolder.removeObserver(player);
     }
+
 
     private void startSinglePlayer(HumanPlayer player, boolean withCpu, int level) {
         log.debug("startSinglePlayer: " + level);
@@ -104,6 +91,8 @@ public class MatchMaker implements Serializable, PlayerParent {
         //when a match has been made:
         Game game = new Game(this, playerList, gameController, core);
         game.start();
+
+        eternalGameHolder.removeObserver(player);
     }
 
     private void arrangeMultiPlayer(HumanPlayer player, MatchRequest matchRequest) {
@@ -138,17 +127,15 @@ public class MatchMaker implements Serializable, PlayerParent {
                 Game game = new Game(this, playerList, gameController, core);
                 game.start();
                 waitingPlayer = null;
+
+                eternalGameHolder.removeObserver(waitingPlayer);
+                eternalGameHolder.removeObserver(player);
             }
         }
     }
 
-    public void gamedStopped(Game game) {
-        if (game == eternalGame) {
-            log.info("eternal game stopped");
-            eternalGame = null;
-        } else {
-            log.info("non-eternal game reported stop!");
-        }
+    public void gameStopped(Game game) {
+        eternalGameHolder.gameStopped(game);
     }
 
     @Override
@@ -161,6 +148,8 @@ public class MatchMaker implements Serializable, PlayerParent {
         if (player == waitingPlayer) {
             waitingPlayer = null;
         }
+
+        eternalGameHolder.removeObserver(player);
     }
 
     @Override
